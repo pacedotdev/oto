@@ -1,0 +1,31 @@
+package pleasantries
+
+import (
+	"github.com/pacelabs/oto/testdata/services"
+)
+
+type GreeterService interface {
+	Greet(GreetRequest) GreetResponse
+
+	GetGreetings(GetGreetingsRequest) GetGreetingsResponse
+}
+
+type GreetRequest struct {
+	Name string
+}
+
+type GreetResponse struct {
+	Greeting Greeting
+}
+
+type GetGreetingsRequest struct {
+	Page services.Page
+}
+
+type GetGreetingsResponse struct {
+	Greetings []Greeting
+}
+
+type Greeting struct {
+	Text string
+}
