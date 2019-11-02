@@ -6,7 +6,6 @@ import (
 
 type GreeterService interface {
 	Greet(GreetRequest) GreetResponse
-
 	GetGreetings(GetGreetingsRequest) GetGreetingsResponse
 }
 
