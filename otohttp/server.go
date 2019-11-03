@@ -15,12 +15,16 @@ import (
 type Server struct {
 	routes   map[string]http.Handler
 	NotFound http.Handler
+	OnErr    func(w http.ResponseWriter, r *http.Request, err error)
 }
 
 // NewServer makes a new Server.
 func NewServer() *Server {
 	return &Server{
 		routes: make(map[string]http.Handler),
+		OnErr: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
 	}
 }
 
