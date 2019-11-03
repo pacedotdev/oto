@@ -10,7 +10,7 @@ type GreeterService interface {
 }
 
 type GreetRequest struct {
-	Name string
+	Names []string
 }
 
 type GreetResponse struct {

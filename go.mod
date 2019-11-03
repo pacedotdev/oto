@@ -3,8 +3,8 @@ module github.com/pacelabs/oto
 go 1.13
 
 require (
+	github.com/gobuffalo/helpers v0.4.0 // indirect
 	github.com/gobuffalo/plush v3.8.3+incompatible
-	github.com/machinebox/remoto v0.1.1
 	github.com/markbates/inflect v1.0.4
 	github.com/matryer/is v1.2.0
 	github.com/pkg/errors v0.8.1

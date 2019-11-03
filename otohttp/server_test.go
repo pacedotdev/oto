@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/machinebox/remoto/go/remotohttp"
 	"github.com/matryer/is"
 )
 
@@ -54,7 +53,7 @@ func TestDecode(t *testing.T) {
 	is.NoErr(err)
 	req.Header.Set("Content-Type", "application/json")
 	var requestObjects []r
-	err = remotohttp.Decode(req, &requestObjects)
+	err = Decode(req, &requestObjects)
 	is.NoErr(err)
 	is.Equal(len(requestObjects), 3)
 	is.Equal(requestObjects[0].Name, "Mat")

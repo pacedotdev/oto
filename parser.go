@@ -106,12 +106,12 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
 	if inputParams.Len() != 1 {
-		return m, p.errWrap(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
+		return m, p.wrapErr(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
 	m.InputObject = p.parseType(pkg, inputParams.At(0))
 	outputParams := sig.Results()
 	if outputParams.Len() != 1 {
-		return m, p.errWrap(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
+		return m, p.wrapErr(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
 	m.OutputObject = p.parseType(pkg, outputParams.At(0))
 	return m, nil
@@ -124,7 +124,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	typ := v.Underlying()
 	st, ok := typ.(*types.Struct)
 	if !ok {
-		return p.errWrap(errors.New(obj.Name+" must be a struct"), pkg, o.Pos())
+		return p.wrapErr(errors.New(obj.Name+" must be a struct"), pkg, o.Pos())
 	}
 	for i := 0; i < st.NumFields(); i++ {
 		field, err := p.parseField(pkg, st.Field(i))
@@ -141,7 +141,7 @@ func (p *parser) parseField(pkg *packages.Package, v *types.Var) (field, error) 
 	var f field
 	f.Name = v.Name()
 	if !v.Exported() {
-		return f, p.errWrap(errors.New(f.Name+" must be exported"), pkg, v.Pos())
+		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
 	f.Type = p.parseType(pkg, v)
 	return f, nil
@@ -169,7 +169,7 @@ func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
 	return ftype
 }
 
-func (p *parser) errWrap(err error, pkg *packages.Package, pos token.Pos) error {
+func (p *parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {
 	position := pkg.Fset.Position(pos)
 	return errors.Wrap(err, position.String())
 }

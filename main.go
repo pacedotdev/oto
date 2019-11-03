@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 func main() {
@@ -17,6 +19,13 @@ func main() {
 
 func run(stdout io.Writer, args []string) error {
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
+	flags.Usage = func() {
+		fmt.Println(args[0] + ` usage:
+	oto [flags] paths [[path2] [path3]...]`)
+		fmt.Println(`
+flags:`)
+		flags.PrintDefaults()
+	}
 	var (
 		template = flags.String("template", "", "plush template to render")
 		outfile  = flags.String("out", "", "output file (default: stdout)")
@@ -24,6 +33,9 @@ func run(stdout io.Writer, args []string) error {
 	)
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
+	}
+	if *template == "" {
+		return errors.New("missing template")
 	}
 	def, err := newParser(flags.Args()...).parse()
 	if err != nil {
