@@ -30,9 +30,7 @@ func Register<%= service.Name %>(server *otohttp.Server, <%= camelize_down(servi
 	server.Register("<%= service.Name %>", "<%= method.Name %>", handler)
 	<% } %>
 }
-
 <%= for (method) in service.Methods { %>
-
 func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w http.ResponseWriter, r *http.Request) {
 	var request <%= method.InputObject.TypeName %>
 	if err := otohttp.Decode(r, &request); err != nil {
@@ -54,11 +52,9 @@ func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w ht
 <% } %>
 
 <%= for (object) in def.Objects { %>
-
 type <%= object.Name %> struct {
 <%= for (field) in object.Fields { %>
 	<%= field.Name %> <% if (field.Type.Multiple) { %>[]<% } %><%= field.Type.TypeName %>
 <% } %>
 }
-
 <% } %>
