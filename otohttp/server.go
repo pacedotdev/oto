@@ -29,7 +29,7 @@ func NewServer() *Server {
 }
 
 // Register adds a handler for the specified service method.
-func (s *Server) Register(service, method string, h http.Handler) {
+func (s *Server) Register(service, method string, h http.HandlerFunc) {
 	s.routes[fmt.Sprintf("/oto/%s.%s", service, method)] = h
 }
 

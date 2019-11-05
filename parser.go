@@ -32,8 +32,9 @@ type object struct {
 }
 
 type field struct {
-	Name string    `json:"name,omitempty"`
-	Type fieldType `json:"type,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Type      fieldType `json:"type,omitempty"`
+	OmitEmpty bool      `json:"omitEmpty,omitempty"`
 }
 
 type fieldType struct {
@@ -45,6 +46,8 @@ type fieldType struct {
 type parser struct {
 	patterns []string
 	def      definition
+
+	outputObjects map[string]bool
 }
 
 // newParser makes a fresh parser using the specified patterns.
@@ -61,6 +64,7 @@ func (p *parser) parse() (definition, error) {
 		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName,
 		Tests: false,
 	}
+	p.outputObjects = make(map[string]bool)
 	pkgs, err := packages.Load(cfg, p.patterns...)
 	if err != nil {
 		return p.def, err
@@ -82,7 +86,30 @@ func (p *parser) parse() (definition, error) {
 			}
 		}
 	}
+	if err := p.addOutputFields(); err != nil {
+		return p.def, err
+	}
 	return p.def, nil
+}
+
+// addOutputFields adds built-in fields to the response objects
+// mentioned in p.outputObjects.
+func (p *parser) addOutputFields() error {
+	errorField := field{
+		OmitEmpty: true,
+		Name:      "Error",
+		Type: fieldType{
+			TypeName: "string",
+		},
+	}
+	for typeName := range p.outputObjects {
+		obj, ok := p.findObjectByName(typeName)
+		if !ok {
+			return errors.Errorf("missing output object: %s", typeName)
+		}
+		obj.Fields = append(obj.Fields, errorField)
+	}
+	return nil
 }
 
 func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (service, error) {
@@ -106,14 +133,15 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
 	if inputParams.Len() != 1 {
-		return m, p.wrapErr(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
+		return m, p.wrapErr(errors.New("invalid method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
 	m.InputObject = p.parseType(pkg, inputParams.At(0))
 	outputParams := sig.Results()
 	if outputParams.Len() != 1 {
-		return m, p.wrapErr(errors.New("bad method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
+		return m, p.wrapErr(errors.New("invalid method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
 	m.OutputObject = p.parseType(pkg, outputParams.At(0))
+	p.outputObjects[m.OutputObject.TypeName] = true
 	return m, nil
 }
 
@@ -167,6 +195,16 @@ func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
 	}
 	ftype.TypeName = types.TypeString(typ, resolver)
 	return ftype
+}
+
+func (p *parser) findObjectByName(typeName string) (*object, bool) {
+	for i := range p.def.Objects {
+		obj := &p.def.Objects[i]
+		if obj.Name == typeName {
+			return obj, true
+		}
+	}
+	return nil, false
 }
 
 func (p *parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {

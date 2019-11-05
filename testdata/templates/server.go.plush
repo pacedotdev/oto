@@ -6,6 +6,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+
+	"github.com/pacelabs/oto/otohttp"
 	<%= for (importPath, name) in def.Imports { %>
 	<%= name %> "<%= importPath %>"
 	<% } %>
@@ -14,8 +16,7 @@ import (
 <%= for (service) in def.Services { %>
 type <%= service.Name %> interface {
 <%= for (method) in service.Methods { %>
-	<%= method.Name %>(context.Context, <%= method.InputObject.TypeName %>) (*<%= method.OutputObject.TypeName %>, error)
-<% } %>
+	<%= method.Name %>(context.Context, <%= method.InputObject.TypeName %>) (*<%= method.OutputObject.TypeName %>, error)<% } %>
 }
 <% } %>
 
@@ -30,10 +31,8 @@ func Register<%= service.Name %>(server *otohttp.Server, <%= camelize_down(servi
 		server: server,
 		<%= camelize_down(service.Name) %>: <%= camelize_down(service.Name) %>,
 	}
-	<%= for (method) in service.Methods { %>
-	server.Register("<%= service.Name %>", "<%= method.Name %>", handler)
-	<% } %>
-}
+	<%= for (method) in service.Methods { %>server.Register("<%= service.Name %>", "<%= method.Name %>", handler.handle<%= method.Name %>)
+	<% } %>}
 <%= for (method) in service.Methods { %>
 func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w http.ResponseWriter, r *http.Request) {
 	var request <%= method.InputObject.TypeName %>
@@ -44,7 +43,7 @@ func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w ht
 	response, err := s.<%= camelize_down(service.Name) %>.<%= method.Name %>(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServiceError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
@@ -57,8 +56,7 @@ func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w ht
 
 <%= for (object) in def.Objects { %>
 type <%= object.Name %> struct {
-<%= for (field) in object.Fields { %>
-	<%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %>
+	<%= for (field) in object.Fields { %><%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %> `json:"<%= camelize_down(field.Name) %><%= if (field.OmitEmpty) { %>,omitempty<% } %>"`
 <% } %>
 }
 <% } %>
