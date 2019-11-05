@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 
@@ -13,9 +14,12 @@ import (
 
 // Server handles oto requests.
 type Server struct {
-	routes   map[string]http.Handler
+	routes map[string]http.Handler
+	// NotFound is the http.Handler to use when a resource is
+	// not found.
 	NotFound http.Handler
-	OnErr    func(w http.ResponseWriter, r *http.Request, err error)
+	// OnErr is called when there is an error.
+	OnErr func(w http.ResponseWriter, r *http.Request, err error)
 }
 
 // NewServer makes a new Server.
@@ -23,8 +27,16 @@ func NewServer() *Server {
 	return &Server{
 		routes: make(map[string]http.Handler),
 		OnErr: func(w http.ResponseWriter, r *http.Request, err error) {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			errObj := struct {
+				Error string `json:"error"`
+			}{
+				Error: err.Error(),
+			}
+			if err := Encode(w, r, http.StatusInternalServerError, errObj); err != nil {
+				log.Printf("failed to encode error: %s\n", err)
+			}
 		},
+		NotFound: http.NotFoundHandler(),
 	}
 }
 
