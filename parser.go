@@ -3,6 +3,7 @@ package main
 import (
 	"go/token"
 	"go/types"
+	"sort"
 
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
@@ -86,6 +87,9 @@ func (p *parser) parse() (definition, error) {
 			}
 		}
 	}
+	sort.Slice(p.def.Services, func(i, j int) bool {
+		return p.def.Services[i].Name < p.def.Services[j].Name
+	})
 	if err := p.addOutputFields(); err != nil {
 		return p.def, err
 	}
