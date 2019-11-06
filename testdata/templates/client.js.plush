@@ -17,7 +17,12 @@ export class <%= service.Name %> {
 			headers: headers,
 			body: JSON.stringify(<%= camelize_down(method.InputObject.TypeName) %>)
 		})
-		return response.json()
+		return response.json().then((json) => {
+			if (json.error) {
+				throw new Error(json.error)
+			}
+			return json
+		})
 	}
 	<% } %>
 }
