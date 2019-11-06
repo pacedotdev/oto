@@ -7,9 +7,9 @@ export class <%= service.Name %> {
 	<%= for (method) in service.Methods { %>
 	async <%= camelize_down(method.Name) %>(<%= camelize_down(method.InputObject.TypeName) %>) {
 		const headers = {
-			'Accept': 			'application/json',
-			'Accept-Encoding': 	'gzip',
-			'Content-Type': 	'application/json',
+			'Accept':		'application/json',
+			'Accept-Encoding':	'gzip',
+			'Content-Type':		'application/json',
 		}
 		<%= camelize_down(method.InputObject.TypeName) %> = <%= camelize_down(method.InputObject.TypeName) %> || {}
 		const response = await fetch('/oto/<%= service.Name %>.<%= method.Name %>', {
