@@ -2,7 +2,7 @@
 
 Go driven rpc code generation tool for right now.
 
-## How it works
+## Tutorial
 
 Write your service definition as a Go interface:
 
