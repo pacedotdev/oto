@@ -1,6 +1,6 @@
 module github.com/pacelabs/oto/otohttp
 
-go 1.13
+go 1.12
 
 require (
 	github.com/matryer/is v1.2.0

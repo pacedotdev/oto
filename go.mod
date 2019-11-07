@@ -1,6 +1,6 @@
 module github.com/pacelabs/oto
 
-go 1.13
+go 1.12
 
 require (
 	github.com/gobuffalo/helpers v0.4.0 // indirect
