@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/dustin/go-humanize"
 	"github.com/pkg/errors"
 )
 
@@ -30,6 +31,7 @@ flags:`)
 		template = flags.String("template", "", "plush template to render")
 		outfile  = flags.String("out", "", "output file (default: stdout)")
 		pkg      = flags.String("pkg", "", "explicit package name (default: inferred)")
+		v        = flags.Bool("v", false, "verbose output")
 	)
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
@@ -37,7 +39,12 @@ flags:`)
 	if *template == "" {
 		return errors.New("missing template")
 	}
-	def, err := newParser(flags.Args()...).parse()
+	parser := newParser(flags.Args()...)
+	parser.Verbose = *v
+	if parser.Verbose {
+		fmt.Println("oto - github.com/pacelabs/oto")
+	}
+	def, err := parser.parse()
 	if err != nil {
 		return err
 	}
@@ -63,6 +70,18 @@ flags:`)
 	}
 	if _, err := io.WriteString(w, out); err != nil {
 		return err
+	}
+	if parser.Verbose {
+		var methodsCount int
+		for i := range def.Services {
+			methodsCount += len(def.Services[i].Methods)
+		}
+		fmt.Println()
+		fmt.Printf("\tTotal services: %d", len(def.Services))
+		fmt.Printf("\tTotal Methods: %d", methodsCount)
+		fmt.Printf("\tTotal Objects: %d\n", len(def.Objects))
+		fmt.Printf("\tOutput size: %s\n", humanize.Bytes(uint64(len(out))))
+
 	}
 	return nil
 }

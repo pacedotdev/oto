@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go/token"
 	"go/types"
 	"sort"
@@ -45,10 +46,10 @@ type fieldType struct {
 }
 
 type parser struct {
-	patterns []string
-	def      definition
-
+	patterns      []string
+	def           definition
 	outputObjects map[string]bool
+	Verbose       bool
 }
 
 // newParser makes a fresh parser using the specified patterns.
@@ -119,6 +120,9 @@ func (p *parser) addOutputFields() error {
 func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (service, error) {
 	var s service
 	s.Name = obj.Name()
+	if p.Verbose {
+		fmt.Printf("%s ", s.Name)
+	}
 	l := interfaceType.NumMethods()
 	for i := 0; i < l; i++ {
 		m := interfaceType.Method(i)
