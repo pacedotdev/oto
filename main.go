@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/dustin/go-humanize"
 	"github.com/pkg/errors"
@@ -28,16 +29,21 @@ flags:`)
 		flags.PrintDefaults()
 	}
 	var (
-		template = flags.String("template", "", "plush template to render")
-		outfile  = flags.String("out", "", "output file (default: stdout)")
-		pkg      = flags.String("pkg", "", "explicit package name (default: inferred)")
-		v        = flags.Bool("v", false, "verbose output")
+		template  = flags.String("template", "", "plush template to render")
+		outfile   = flags.String("out", "", "output file (default: stdout)")
+		pkg       = flags.String("pkg", "", "explicit package name (default: inferred)")
+		v         = flags.Bool("v", false, "verbose output")
+		paramsStr = flags.String("params", "", "list of parameters in the format: \"key:value,key:value\"")
 	)
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
 	if *template == "" {
 		return errors.New("missing template")
+	}
+	params, err := parseParams(*paramsStr)
+	if err != nil {
+		return errors.Wrap(err, "params")
 	}
 	parser := newParser(flags.Args()...)
 	parser.Verbose = *v
@@ -55,7 +61,7 @@ flags:`)
 	if err != nil {
 		return err
 	}
-	out, err := render(string(b), def)
+	out, err := render(string(b), def, params)
 	if err != nil {
 		return err
 	}
@@ -84,4 +90,23 @@ flags:`)
 
 	}
 	return nil
+}
+
+// parseParams returns a map of data parsed from the params string.
+func parseParams(s string) (map[string]interface{}, error) {
+	params := make(map[string]interface{})
+	if s == "" {
+		// empty map for an empty string
+		return params, nil
+	}
+	pairs := strings.Split(s, ",")
+	for i := range pairs {
+		pair := strings.TrimSpace(pairs[i])
+		segs := strings.Split(pair, ":")
+		if len(segs) != 2 {
+			return nil, errors.New("malformed params")
+		}
+		params[strings.TrimSpace(segs[0])] = strings.TrimSpace(segs[1])
+	}
+	return params, nil
 }

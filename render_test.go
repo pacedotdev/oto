@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/matryer/is"
@@ -11,8 +12,20 @@ func TestRender(t *testing.T) {
 	def := definition{
 		PackageName: "services",
 	}
-	template := `package <%= def.PackageName %>`
-	s, err := render(template, def)
+	params := map[string]interface{}{
+		"Description": "Package services contains services.",
+	}
+	template := `// <%= params["Description"] %>
+package <%= def.PackageName %>`
+	s, err := render(template, def, params)
 	is.NoErr(err)
-	is.Equal(s, `package services`)
+	for _, should := range []string{
+		"// Package services contains services.",
+		"package services",
+	} {
+		if !strings.Contains(s, should) {
+			t.Errorf("missing: %s", should)
+			is.Fail()
+		}
+	}
 }

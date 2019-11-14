@@ -8,10 +8,11 @@ import (
 var defaultRuleset = inflect.NewDefaultRuleset()
 
 // render renders the template using the definition.
-func render(template string, def definition) (string, error) {
+func render(template string, def definition, params map[string]interface{}) (string, error) {
 	ctx := plush.NewContext()
 	ctx.Set("camelize_down", camelizeDownFirst)
 	ctx.Set("def", def)
+	ctx.Set("params", params)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
