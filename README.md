@@ -27,7 +27,6 @@ Use the `oto` tool to generate a client and server:
 ```bash
 oto -template ./otohttp/templates/server.go.plush -out ./api/oto.gen.go ./api/definitions
 gofmt -w ./api/oto.gen.go ./api/oto.gen.go
-oto -template ./otohttp/templates/client.js.plush -out ./src/oto.gen.js ./api/definitions
 ```
 
 Implement the service in Go:
@@ -67,3 +66,17 @@ greeterService.greet({name: "Mat"})
   .then((response) => alert(response.greeting))
   .catch((e) => alert(e))
 ```
+
+### Specifying additional template data
+
+You can provide strings to your templates via the `-params` flag:
+
+```bash
+oto \
+  -template ./otohttp/templates/server.go.plush \
+  -out ./api/oto.gen.go 
+  -params "key1:value1,key2:value2"
+  ./api/definitions
+```
+
+Within your templates, you may access these strings with `<%= params["key1"] %>`.
