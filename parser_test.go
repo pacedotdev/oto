@@ -11,8 +11,9 @@ func TestParse(t *testing.T) {
 	patterns := []string{"./testdata/services/pleasantries"}
 	def, err := newParser(patterns...).parse()
 	is.NoErr(err)
-	is.Equal(len(def.Services), 2)
 
+	is.Equal(def.PackageName, "pleasantries")
+	is.Equal(len(def.Services), 2)
 	is.Equal(def.Services[0].Name, "GreeterService")
 	is.Equal(len(def.Services[0].Methods), 2)
 	is.Equal(def.Services[0].Methods[0].Name, "GetGreetings")
@@ -38,6 +39,8 @@ func TestParse(t *testing.T) {
 	is.Equal(greetInputObject.Fields[0].Name, "Page")
 	is.Equal(greetInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetInputObject.Fields[0].Type.TypeName, "services.Page")
+	is.Equal(greetInputObject.Fields[0].Type.TypeID, "github.com/pacelabs/oto/testdata/services.Page")
+	is.Equal(greetInputObject.Fields[0].Type.IsObject, true)
 	is.Equal(greetInputObject.Fields[0].Type.Multiple, false)
 	is.Equal(greetInputObject.Fields[0].Type.Package, "github.com/pacelabs/oto/testdata/services")
 
@@ -46,6 +49,7 @@ func TestParse(t *testing.T) {
 	is.Equal(greetOutputObject.Name, "GetGreetingsResponse")
 	is.Equal(len(greetOutputObject.Fields), 2)
 	is.Equal(greetOutputObject.Fields[0].Name, "Greetings")
+	is.Equal(greetOutputObject.Fields[0].Type.TypeID, "github.com/pacelabs/oto/testdata/services/pleasantries.Greeting")
 	is.Equal(greetOutputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetOutputObject.Fields[0].Type.TypeName, "Greeting")
 	is.Equal(greetOutputObject.Fields[0].Type.Multiple, true)
@@ -86,6 +90,7 @@ func TestParse(t *testing.T) {
 	is.Equal(welcomeOutputObject.Name, "WelcomeResponse")
 	is.Equal(len(welcomeOutputObject.Fields), 2)
 	is.Equal(welcomeOutputObject.Fields[0].Name, "Message")
+	is.Equal(welcomeOutputObject.Fields[0].Type.IsObject, false)
 	is.Equal(welcomeOutputObject.Fields[0].OmitEmpty, false)
 	is.Equal(welcomeOutputObject.Fields[0].Type.TypeName, "string")
 	is.Equal(welcomeOutputObject.Fields[0].Type.Multiple, false)
@@ -96,7 +101,43 @@ func TestParse(t *testing.T) {
 	is.Equal(welcomeOutputObject.Fields[1].Type.Multiple, false)
 	is.Equal(welcomeOutputObject.Fields[1].Type.Package, "")
 
+	is.Equal(len(def.Objects), 8)
+	for i := range def.Objects {
+		switch def.Objects[i].Name {
+		case "Greeting":
+			is.Equal(len(def.Objects[i].Fields), 1)
+			is.Equal(def.Objects[i].Imported, false)
+		case "Page":
+			is.Equal(def.Objects[i].TypeID, "github.com/pacelabs/oto/testdata/services.Page")
+			is.Equal(len(def.Objects[i].Fields), 3)
+			is.Equal(def.Objects[i].Imported, true)
+		}
+	}
+
 	// b, err := json.MarshalIndent(def, "", "  ")
 	// is.NoErr(err)
 	// log.Println(string(b))
+}
+
+func TestFieldJSType(t *testing.T) {
+	is := is.New(t)
+	for in, expected := range map[fieldType]string{
+		fieldType{TypeName: "string"}:                     "string",
+		fieldType{TypeName: "int"}:                        "number",
+		fieldType{TypeName: "uint"}:                       "number",
+		fieldType{TypeName: "uint32"}:                     "number",
+		fieldType{TypeName: "int32"}:                      "number",
+		fieldType{TypeName: "int64"}:                      "number",
+		fieldType{TypeName: "float64"}:                    "number",
+		fieldType{TypeName: "bool"}:                       "boolean",
+		fieldType{TypeName: "interface{}"}:                "any",
+		fieldType{TypeName: "map[string]interface{}"}:     "object",
+		fieldType{TypeName: "SomeObject", IsObject: true}: "object",
+	} {
+		actual, err := in.JSType()
+		is.NoErr(err)
+		if actual != expected {
+			t.Errorf("%s expected: %q but got %q", in.TypeName, expected, actual)
+		}
+	}
 }

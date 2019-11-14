@@ -29,3 +29,14 @@ package <%= def.PackageName %>`
 		}
 	}
 }
+
+func TestCamelizeDown(t *testing.T) {
+	for in, expected := range map[string]string{
+		"CamelsAreGreat": "camelsAreGreat",
+	} {
+		actual := camelizeDown(in)
+		if actual != expected {
+			t.Errorf("%s expected: %q but got %q", in, expected, actual)
+		}
+	}
+}

@@ -43,8 +43,10 @@ type method struct {
 }
 
 type object struct {
-	Name   string  `json:"name,omitempty"`
-	Fields []field `json:"fields,omitempty"`
+	TypeID   string  `json:"typeID"`
+	Name     string  `json:"name"`
+	Imported bool    `json:"imported,omitempty"`
+	Fields   []field `json:"fields,omitempty"`
 }
 
 type field struct {
@@ -54,16 +56,44 @@ type field struct {
 }
 
 type fieldType struct {
-	TypeName string `json:"typeName,omitempty"`
-	Multiple bool   `json:"multiple,omitempty"`
-	Package  string `json:"package,omitempty"`
+	TypeID   string `json:"typeID"`
+	TypeName string `json:"typeName"`
+	Multiple bool   `json:"multiple"`
+	Package  string `json:"package"`
+	IsObject bool   `json:"isObject"`
+}
+
+func (f fieldType) JSType() (string, error) {
+	if f.IsObject {
+		return "object", nil
+	}
+	switch f.TypeName {
+	case "interface{}":
+		return "any", nil
+	case "map[string]interface{}":
+		return "object", nil
+	case "string":
+		return "string", nil
+	case "bool":
+		return "boolean", nil
+	case "int", "int16", "int32", "int64",
+		"uint", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return "number", nil
+	}
+	return "", errors.Errorf("oto: type not supported: %s", f.TypeName)
 }
 
 type parser struct {
-	patterns      []string
-	def           definition
-	outputObjects map[string]bool
-	Verbose       bool
+	Verbose bool
+
+	patterns []string
+	def      definition
+
+	// outputObjects marks output object names.
+	outputObjects map[string]struct{}
+	// objects marks object names.
+	objects map[string]struct{}
 }
 
 // newParser makes a fresh parser using the specified patterns.
@@ -80,7 +110,8 @@ func (p *parser) parse() (definition, error) {
 		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName,
 		Tests: false,
 	}
-	p.outputObjects = make(map[string]bool)
+	p.outputObjects = make(map[string]struct{})
+	p.objects = make(map[string]struct{})
 	pkgs, err := packages.Load(cfg, p.patterns...)
 	if err != nil {
 		return p.def, err
@@ -137,13 +168,20 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	if inputParams.Len() != 1 {
 		return m, p.wrapErr(errors.New("invalid method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
-	m.InputObject = p.parseType(pkg, inputParams.At(0))
+	var err error
+	m.InputObject, err = p.parseFieldType(pkg, inputParams.At(0))
+	if err != nil {
+		return m, errors.Wrap(err, "parse input object type")
+	}
 	outputParams := sig.Results()
 	if outputParams.Len() != 1 {
 		return m, p.wrapErr(errors.New("invalid method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
-	m.OutputObject = p.parseType(pkg, outputParams.At(0))
-	p.outputObjects[m.OutputObject.TypeName] = true
+	m.OutputObject, err = p.parseFieldType(pkg, outputParams.At(0))
+	if err != nil {
+		return m, errors.Wrap(err, "parse output object type")
+	}
+	p.outputObjects[m.OutputObject.TypeName] = struct{}{}
 	return m, nil
 }
 
@@ -151,11 +189,19 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
 	var obj object
 	obj.Name = o.Name()
+	if _, found := p.objects[obj.Name]; found {
+		// if this has already been parsed, skip it
+		return nil
+	}
+	if o.Pkg().Name() != pkg.Name {
+		obj.Imported = true
+	}
 	typ := v.Underlying()
 	st, ok := typ.(*types.Struct)
 	if !ok {
 		return p.wrapErr(errors.New(obj.Name+" must be a struct"), pkg, o.Pos())
 	}
+	obj.TypeID = o.Pkg().Path() + "." + obj.Name
 	for i := 0; i < st.NumFields(); i++ {
 		field, err := p.parseField(pkg, st.Field(i))
 		if err != nil {
@@ -164,6 +210,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 		obj.Fields = append(obj.Fields, field)
 	}
 	p.def.Objects = append(p.def.Objects, obj)
+	p.objects[obj.Name] = struct{}{}
 	return nil
 }
 
@@ -173,12 +220,17 @@ func (p *parser) parseField(pkg *packages.Package, v *types.Var) (field, error) 
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
-	f.Type = p.parseType(pkg, v)
+	var err error
+	f.Type, err = p.parseFieldType(pkg, v)
+	if err != nil {
+		return f, errors.Wrap(err, "parse type")
+	}
 	return f, nil
 }
 
-func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
+func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (fieldType, error) {
 	var ftype fieldType
+	pkgPath := pkg.PkgPath
 	resolver := func(other *types.Package) string {
 		if other.Name() != pkg.Name {
 			if p.def.Imports == nil {
@@ -186,6 +238,7 @@ func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
 			}
 			p.def.Imports[other.Path()] = other.Name()
 			ftype.Package = other.Path()
+			pkgPath = other.Path()
 			return other.Name()
 		}
 		return "" // no package prefix
@@ -195,8 +248,18 @@ func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
 		typ = slice.Elem()
 		ftype.Multiple = true
 	}
+	if named, ok := typ.(*types.Named); ok {
+		if structure, ok := named.Underlying().(*types.Struct); ok {
+			if err := p.parseObject(pkg, named.Obj(), structure); err != nil {
+				return ftype, err
+			}
+			ftype.IsObject = true
+		}
+	}
 	ftype.TypeName = types.TypeString(typ, resolver)
-	return ftype
+	typeNameWithoutPackage := types.TypeString(typ, func(other *types.Package) string { return "" })
+	ftype.TypeID = pkgPath + "." + typeNameWithoutPackage
+	return ftype, nil
 }
 
 // addOutputFields adds built-in fields to the response objects
