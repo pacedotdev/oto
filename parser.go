@@ -10,11 +10,25 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
+var errNotFound = errors.New("not found")
+
 type definition struct {
 	PackageName string            `json:"packageName,omitempty"`
 	Services    []service         `json:"services,omitempty"`
 	Objects     []object          `json:"objects,omitempty"`
 	Imports     map[string]string `json:"imports,omitempty"`
+}
+
+// Object looks up an object by name. Returns errNotFound error
+// if it cannot find it.
+func (d *definition) Object(name string) (*object, error) {
+	for i := range d.Objects {
+		obj := &d.Objects[i]
+		if obj.Name == name {
+			return obj, nil
+		}
+	}
+	return nil, errNotFound
 }
 
 type service struct {
@@ -95,26 +109,6 @@ func (p *parser) parse() (definition, error) {
 		return p.def, err
 	}
 	return p.def, nil
-}
-
-// addOutputFields adds built-in fields to the response objects
-// mentioned in p.outputObjects.
-func (p *parser) addOutputFields() error {
-	errorField := field{
-		OmitEmpty: true,
-		Name:      "Error",
-		Type: fieldType{
-			TypeName: "string",
-		},
-	}
-	for typeName := range p.outputObjects {
-		obj, ok := p.findObjectByName(typeName)
-		if !ok {
-			return errors.Errorf("missing output object: %s", typeName)
-		}
-		obj.Fields = append(obj.Fields, errorField)
-	}
-	return nil
 }
 
 func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (service, error) {
@@ -205,14 +199,24 @@ func (p *parser) parseType(pkg *packages.Package, obj types.Object) fieldType {
 	return ftype
 }
 
-func (p *parser) findObjectByName(typeName string) (*object, bool) {
-	for i := range p.def.Objects {
-		obj := &p.def.Objects[i]
-		if obj.Name == typeName {
-			return obj, true
-		}
+// addOutputFields adds built-in fields to the response objects
+// mentioned in p.outputObjects.
+func (p *parser) addOutputFields() error {
+	errorField := field{
+		OmitEmpty: true,
+		Name:      "Error",
+		Type: fieldType{
+			TypeName: "string",
+		},
 	}
-	return nil, false
+	for typeName := range p.outputObjects {
+		obj, err := p.def.Object(typeName)
+		if err != nil {
+			return errors.Wrapf(err, "missing output object: %s", typeName)
+		}
+		obj.Fields = append(obj.Fields, errorField)
+	}
+	return nil
 }
 
 func (p *parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {
