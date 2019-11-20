@@ -1,7 +1,7 @@
 package pleasantries
 
 import (
-	"github.com/pacelabs/oto/testdata/services"
+	"github.com/pacedotdev/oto/testdata/services"
 )
 
 type GreeterService interface {

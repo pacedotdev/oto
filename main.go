@@ -48,7 +48,7 @@ flags:`)
 	parser := newParser(flags.Args()...)
 	parser.Verbose = *v
 	if parser.Verbose {
-		fmt.Println("oto - github.com/pacelabs/oto")
+		fmt.Println("oto - github.com/pacedotdev/oto")
 	}
 	def, err := parser.parse()
 	if err != nil {

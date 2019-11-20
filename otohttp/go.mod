@@ -1,4 +1,4 @@
-module github.com/pacelabs/oto/otohttp
+module github.com/pacedotdev/oto/otohttp
 
 go 1.12
 
