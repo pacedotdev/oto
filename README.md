@@ -2,6 +2,11 @@
 
 Go driven rpc code generation tool for right now.
 
+* 100% Go
+* Describe services with Go interfaces
+* Generate server and client code
+* Modify the templates to solve your particular needs
+
 ## Tutorial
 
 Write your service definition as a Go interface:
@@ -62,7 +67,10 @@ Use the generated client to access the service in JavaScript:
 import { GreeterService } from 'oto.gen.js'
 
 const greeterService = new GreeterService()
-greeterService.greet({name: "Mat"})
+
+greeterService.greet({
+  name: "Mat",
+})
   .then((response) => alert(response.greeting))
   .catch((e) => alert(e))
 ```
