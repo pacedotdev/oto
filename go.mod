@@ -9,6 +9,7 @@ require (
 	github.com/gobuffalo/plush v3.8.3+incompatible
 	github.com/gobuffalo/tags v2.1.7+incompatible // indirect
 	github.com/markbates/inflect v1.0.4
+	github.com/matryer/is v1.2.0
 	github.com/pkg/errors v0.8.1
 	github.com/rogpeppe/go-internal v1.5.0 // indirect
 	golang.org/x/net v0.0.0-20191119073136-fc4aabc6c914 // indirect

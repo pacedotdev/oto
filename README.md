@@ -1,4 +1,4 @@
-# oto
+![Welcome to oto project](oto-logo.png)
 
 Go driven rpc code generation tool for right now.
 
