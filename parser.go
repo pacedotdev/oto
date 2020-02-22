@@ -87,6 +87,8 @@ func (f fieldType) JSType() (string, error) {
 type parser struct {
 	Verbose bool
 
+	ExcludeInterfaces []string
+
 	patterns []string
 	def      definition
 
@@ -112,6 +114,7 @@ func (p *parser) parse() (definition, error) {
 	}
 	p.outputObjects = make(map[string]struct{})
 	p.objects = make(map[string]struct{})
+	var excludedObjectsTypeIDs []string
 	pkgs, err := packages.Load(cfg, p.patterns...)
 	if err != nil {
 		return p.def, err
@@ -127,12 +130,35 @@ func (p *parser) parse() (definition, error) {
 				if err != nil {
 					return p.def, err
 				}
+				if isInSlice(p.ExcludeInterfaces, name) {
+					for _, method := range s.Methods {
+						excludedObjectsTypeIDs = append(excludedObjectsTypeIDs, method.InputObject.TypeID)
+						excludedObjectsTypeIDs = append(excludedObjectsTypeIDs, method.OutputObject.TypeID)
+					}
+					continue
+				}
 				p.def.Services = append(p.def.Services, s)
 			case *types.Struct:
 				p.parseObject(pkg, obj, item)
 			}
 		}
 	}
+	// remove any excluded objects
+	nonExcludedObjects := make([]object, 0, len(p.def.Objects))
+	for _, object := range p.def.Objects {
+		excluded := false
+		for _, excludedTypeID := range excludedObjectsTypeIDs {
+			if object.TypeID == excludedTypeID {
+				excluded = true
+				break
+			}
+		}
+		if excluded {
+			continue
+		}
+		nonExcludedObjects = append(nonExcludedObjects, object)
+	}
+	p.def.Objects = nonExcludedObjects
 	sort.Slice(p.def.Services, func(i, j int) bool {
 		return p.def.Services[i].Name < p.def.Services[j].Name
 	})
@@ -275,7 +301,8 @@ func (p *parser) addOutputFields() error {
 	for typeName := range p.outputObjects {
 		obj, err := p.def.Object(typeName)
 		if err != nil {
-			return errors.Wrapf(err, "missing output object: %s", typeName)
+			// skip if we can't find it - it must be excluded
+			continue
 		}
 		obj.Fields = append(obj.Fields, errorField)
 	}
@@ -285,4 +312,13 @@ func (p *parser) addOutputFields() error {
 func (p *parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {
 	position := pkg.Fset.Position(pos)
 	return errors.Wrap(err, position.String())
+}
+
+func isInSlice(slice []string, s string) bool {
+	for i := range slice {
+		if slice[i] == s {
+			return true
+		}
+	}
+	return false
 }

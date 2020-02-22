@@ -29,11 +29,12 @@ flags:`)
 		flags.PrintDefaults()
 	}
 	var (
-		template  = flags.String("template", "", "plush template to render")
-		outfile   = flags.String("out", "", "output file (default: stdout)")
-		pkg       = flags.String("pkg", "", "explicit package name (default: inferred)")
-		v         = flags.Bool("v", false, "verbose output")
-		paramsStr = flags.String("params", "", "list of parameters in the format: \"key:value,key:value\"")
+		template   = flags.String("template", "", "plush template to render")
+		outfile    = flags.String("out", "", "output file (default: stdout)")
+		pkg        = flags.String("pkg", "", "explicit package name (default: inferred)")
+		v          = flags.Bool("v", false, "verbose output")
+		paramsStr  = flags.String("params", "", "list of parameters in the format: \"key:value,key:value\"")
+		ignoreList = flags.String("ignore", "", "comma separated list of interfaces to ignore")
 	)
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
@@ -46,6 +47,10 @@ flags:`)
 		return errors.Wrap(err, "params")
 	}
 	parser := newParser(flags.Args()...)
+	ignoreItems := strings.Split(*ignoreList, ",")
+	if ignoreItems[0] != "" {
+		parser.ExcludeInterfaces = ignoreItems
+	}
 	parser.Verbose = *v
 	if parser.Verbose {
 		fmt.Println("oto - github.com/pacedotdev/oto")

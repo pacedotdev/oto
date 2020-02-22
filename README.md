@@ -30,7 +30,10 @@ type GreetResponse struct {
 Use the `oto` tool to generate a client and server:
 
 ```bash
-oto -template ./otohttp/templates/server.go.plush -out ./api/oto.gen.go ./api/definitions
+oto -template ./otohttp/templates/server.go.plush \
+  -out ./api/oto.gen.go \
+  -ignore Ignorer \
+  ./api/definitions
 gofmt -w ./api/oto.gen.go ./api/oto.gen.go
 ```
 

@@ -9,11 +9,13 @@ import (
 func TestParse(t *testing.T) {
 	is := is.New(t)
 	patterns := []string{"./testdata/services/pleasantries"}
-	def, err := newParser(patterns...).parse()
+	parser := newParser(patterns...)
+	parser.ExcludeInterfaces = []string{"Ignorer"}
+	def, err := parser.parse()
 	is.NoErr(err)
 
 	is.Equal(def.PackageName, "pleasantries")
-	is.Equal(len(def.Services), 2)
+	is.Equal(len(def.Services), 2) // should be 2 services
 	is.Equal(def.Services[0].Name, "GreeterService")
 	is.Equal(len(def.Services[0].Methods), 2)
 	is.Equal(def.Services[0].Methods[0].Name, "GetGreetings")
