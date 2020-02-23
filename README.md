@@ -9,7 +9,13 @@ Go driven rpc code generation tool for right now.
 
 ## Tutorial
 
-Write your service definition as a Go interface:
+Install the project:
+
+```
+go install github.com/pacedotdev/oto
+```
+
+Create a project folder, and write your service definition as a Go interface:
 
 ```go
 package definitions
@@ -36,6 +42,8 @@ oto -template ./otohttp/templates/server.go.plush \
   ./api/definitions
 gofmt -w ./api/oto.gen.go ./api/oto.gen.go
 ```
+
+* Run `oto -help` for more information about these flags
 
 Implement the service in Go:
 
