@@ -11,7 +11,7 @@ pub trait <%= service.Name %>
 {
 
     <%= for (method) in service.Unique { %>
-	fn <%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, ()>;<% } %>
+	fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, ()>;<% } %>
 }
 <% } %>
 
