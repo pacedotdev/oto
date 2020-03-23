@@ -15,7 +15,10 @@ pub use crate::types::*;
 <%= for (method) in service.Methods { %>
 #[post("/oto/<%= service.Name %>.<%= method.Name %>", format = "application/json", data = "<req>")]
 fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>, state: State<<%= service.Name %>ServerState>) -> Json<<%= method.OutputObject.TypeName %>> {
-    Json(<%= method.OutputObject.TypeName %>::new())
+    match self.svc.<%= method.Name %>(req) {
+        Ok(resp) => Json(resp),
+        Err(msg) => Json(<%= method.OutputObject.TypeName %>::error(msg)),
+    }
 }
 <% } %>
 
