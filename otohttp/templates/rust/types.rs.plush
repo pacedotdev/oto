@@ -4,23 +4,39 @@
 
     
 
-trait <%= service.Name %>
+pub trait <%= service.Name %>
 <%= if (len(service.Embedded) > 0) { %> :
     <%= for (embedded) in service.Embedded { %><%= embedded.Name %><% } %>
 <% } %>
 {
 
     <%= for (method) in service.Unique { %>
-	fn <%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>>;<% } %>
+	fn <%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, ()>;<% } %>
 }
 <% } %>
 
 <%= for (object) in def.Objects { %>
 #[derive(Serialize, Deserialize)]
-struct <%= object.Name %> {<%= for (field) in object.Fields { %>
+pub struct <%= object.Name %> {<%= for (field) in object.Fields { %>
         <%= field.Name %>:
         <%= if (field.OmitEmpty) { %> Option< <% } %>
             <%= rust_type(field.Type.TypeName) %>
         <%= if (field.OmitEmpty) { %> > <% } %>,
 <% } %>}
+
+impl <%= object.Name %> {
+    pub fn new() -> <%= object.Name %> {
+        <%= object.Name %>{
+            <%= for (field) in object.Fields { %>
+                <%= field.Name %>:
+                <%= if (field.OmitEmpty) { %>
+                    None
+                <% } else { %>
+                    Default::default()
+                <% } %>,
+            <% } %>
+        }
+    }
+}
+
 <% } %>
