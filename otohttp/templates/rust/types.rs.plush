@@ -39,4 +39,10 @@ impl <%= object.Name %> {
     }
 }
 
+impl Default for <%= object.Name %> {
+    fn default() -> <%= object.Name %> {
+        <%= object.Name %>::new()
+    }
+}
+
 <% } %>
