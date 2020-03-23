@@ -18,7 +18,7 @@ pub trait <%= service.Name %>
 <%= for (object) in def.Objects { %>
 #[derive(Serialize, Deserialize)]
 pub struct <%= object.Name %> {<%= for (field) in object.Fields { %>
-        <%= field.Name %>:
+        <%= underscore(field.Name) %>:
         <%= if (field.OmitEmpty) { %> Option< <% } %>
             <%= rust_type(field.Type.TypeName) %>
         <%= if (field.OmitEmpty) { %> > <% } %>,
@@ -28,7 +28,7 @@ impl <%= object.Name %> {
     pub fn new() -> <%= object.Name %> {
         <%= object.Name %>{
             <%= for (field) in object.Fields { %>
-                <%= field.Name %>:
+                <%= underscore(field.Name) %>:
                 <%= if (field.OmitEmpty) { %>
                     None
                 <% } else { %>
