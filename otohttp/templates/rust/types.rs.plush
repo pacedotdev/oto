@@ -6,12 +6,12 @@
 
 trait <%= service.Name %>
 <%= if (len(service.Embedded) > 0) { %> :
-    <%= for (embedded) in service.Embedded { %><%= embedded %><% } %>
+    <%= for (embedded) in service.Embedded { %><%= embedded.Name %><% } %>
 <% } %>
 {
 
     <%= for (method) in service.Unique { %>
-	fn <%= underscore(method.Name) %>(&<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>>;<% } %>
+	fn <%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>>;<% } %>
 }
 <% } %>
 

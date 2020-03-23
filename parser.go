@@ -32,10 +32,10 @@ func (d *definition) Object(name string) (*object, error) {
 }
 
 type service struct {
-	Name     string   `json:"name,omitempty"`
-	Methods  []method `json:"methods,omitempty"`
-	Embedded []string `json:"embedded,omitempty"`
-	Unique   []method `json:"unique,omitempty"`
+	Name     string    `json:"name,omitempty"`
+	Methods  []method  `json:"methods,omitempty"`
+	Embedded []service `json:"embedded,omitempty"`
+	Unique   []method  `json:"unique,omitempty"`
 }
 
 type method struct {
@@ -203,7 +203,13 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 		s.Methods = append(s.Methods, method)
 	}
 	for i := 0; i < interfaceType.NumEmbeddeds(); i++ {
-		s.Embedded = append(s.Embedded, interfaceType.Embedded(i).Obj().Name())
+		for _, service := range p.def.Services {
+			if service.Name == interfaceType.Embedded(i).Obj().Name() {
+				s.Embedded = append(s.Embedded, service)
+				break
+			}
+		}
+		//s.Embedded = append(s.Embedded, interfaceType.Embedded(i).Obj().Name())
 	}
 	for _, method := range s.Methods {
 		if p.methodIsUnique(method.Name, "") {
