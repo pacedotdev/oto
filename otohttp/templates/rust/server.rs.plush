@@ -1,0 +1,42 @@
+#![feature(proc_macro_hygiene, decl_macro)]
+
+#[macro_use]
+extern crate rocket;
+#[macro_use]
+extern crate rocket_contrib;
+#[macro_use]
+extern crate serde_derive;
+use rocket::State;
+use rocket_contrib::json::{Json, JsonValue};
+
+pub use crate::types::*;
+
+<%= for (service) in def.Services { %>
+<%= for (method) in service.Methods { %>
+#[post("/oto/<%= service.Name %>.<%= method.Name %>", format = "application/json", data = "<req>")]
+fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>, state: State<<%= service.Name %>ServerState>) -> Json<<%= method.OutputObject.TypeName %>> {
+    Json(<%= method.OutputObject.TypeName %>::new())
+}
+<% } %>
+
+struct <%= service.Name %>ServerState {
+    svc: &<%= service.Name %>,
+}
+pub struct <%= service.Name %>Server {
+    rocket: rocket::Rocket,
+}
+
+impl <%= service.Name %>Server {
+    pub fn new(svc: &<%= service.Name %>) -> <%= service.Name %>Server {
+        let rocket = rocket::ignite()
+            .mount("/", routes![])
+            .manage(<%= service.Name %>ServerState{ svc });
+        <%= service.Name %>Server { rocket }
+    }
+
+    pub fn listen(&mut self) -> rocket::LaunchError {
+        self.rocket.launch()
+    }
+}
+
+<% } %>
