@@ -37,6 +37,21 @@ impl <%= object.Name %> {
             <% } %>
         }
     }
+
+    pub fn make(
+        <%= for (field) in object.Fields { %>
+            <%= underscore(field.Name) %>:
+            <%= if (field.OmitEmpty) { %> Option< <% } %>
+            <%= rust_type(field.Type.TypeName) %>
+            <%= if (field.OmitEmpty) { %> > <% } %>,
+        <% } %>
+    ) -> <%= object.Name %> {
+        <%= object.Name %>{
+            <%= for (field) in object.Fields { %>
+                <%= underscore(field.Name) %>,
+            <% } %>
+        }
+    }
 }
 
 impl Default for <%= object.Name %> {
