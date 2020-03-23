@@ -14,6 +14,7 @@ func render(template string, def definition, params map[string]interface{}) (str
 	ctx.Set("underscore", underscore)
 	ctx.Set("def", def)
 	ctx.Set("params", params)
+	ctx.Set("rust_type", rustType)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -40,4 +41,34 @@ func underscore(s string) string {
 		return "id"
 	}
 	return defaultRuleset.Underscore(s)
+}
+
+// rustType converst the given type name to its rust equivalent
+func rustType(s string) string {
+	switch s {
+	case "string":
+		return "String"
+	case "int":
+		return "i64"
+	case "int8":
+		return "i8"
+	case "int16":
+		return "i16"
+	case "int32":
+		return "i32"
+	case "int64":
+		return "i64"
+	case "uint":
+		return "u64"
+	case "uint8":
+		return "u8"
+	case "uint16":
+		return "u16"
+	case "uint32":
+		return "u32"
+	case "uint64":
+		return "u64"
+	default:
+		return s
+	}
 }

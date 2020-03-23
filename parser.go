@@ -32,8 +32,10 @@ func (d *definition) Object(name string) (*object, error) {
 }
 
 type service struct {
-	Name    string   `json:"name,omitempty"`
-	Methods []method `json:"methods,omitempty"`
+	Name     string   `json:"name,omitempty"`
+	Methods  []method `json:"methods,omitempty"`
+	Embedded []string `json:"embedded,omitempty"`
+	Unique   []method `json:"unique,omitempty"`
 }
 
 type method struct {
@@ -168,6 +170,23 @@ func (p *parser) parse() (definition, error) {
 	return p.def, nil
 }
 
+// methodIsUnique determines if the given method
+// is unique the interface or if it was inherited
+// as an embedded method
+func (p *parser) methodIsUnique(methodName string, serviceName string) bool {
+	for _, svc := range p.def.Services {
+		if svc.Name == serviceName {
+			continue
+		}
+		for _, method := range svc.Methods {
+			if method.Name == methodName {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (service, error) {
 	var s service
 	s.Name = obj.Name()
@@ -182,6 +201,14 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 			return s, err
 		}
 		s.Methods = append(s.Methods, method)
+	}
+	for i := 0; i < interfaceType.NumEmbeddeds(); i++ {
+		s.Embedded = append(s.Embedded, interfaceType.Embedded(i).Obj().Name())
+	}
+	for _, method := range s.Methods {
+		if p.methodIsUnique(method.Name, "") {
+			s.Unique = append(s.Unique, method)
+		}
 	}
 	return s, nil
 }
