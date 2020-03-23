@@ -11,6 +11,7 @@ var defaultRuleset = inflect.NewDefaultRuleset()
 func render(template string, def definition, params map[string]interface{}) (string, error) {
 	ctx := plush.NewContext()
 	ctx.Set("camelize_down", camelizeDown)
+	ctx.Set("underscore", underscore)
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	s, err := plush.Render(string(template), ctx)
@@ -30,4 +31,13 @@ func camelizeDown(s string) string {
 		// as expected in this case.
 	}
 	return defaultRuleset.CamelizeDownFirst(s)
+}
+
+// underscore converts a name or other string into a snake case
+// version. "ModelID" becomes "model_id".
+func underscore(s string) string {
+	if s == "ID" {
+		return "id"
+	}
+	return defaultRuleset.Underscore(s)
 }
