@@ -8,16 +8,26 @@ use serde_json;
 use std::io::Cursor;
 use crate::types::*;
 
-<%= for (service) in def.Services { %>
-<%= for (method) in service.Methods { %>
-#[post("/oto/<%= service.Name %>.<%= method.Name %>", format = "json", data = "<data>")]
-fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> Json<<%= method.OutputObject.TypeName %>> {
-    match svc.<%= underscore(method.Name) %>(data) {
-        Ok(resp) => Json(resp),
-        Err(msg) => Json(<%= method.OutputObject.TypeName %>::error(msg)),
-    }
+#[post("/")]
+fn index() -> &'static str {
+    "It works!"
 }
+
+<%= for (service) in def.Services { %>
+
+
+
+<%= for (method) in service.Unique { %>
+    #[post("/<%= service.Name %>.<%= method.Name %>", format = "json", data = "<data>")]
+    fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> Json<<%= method.OutputObject.TypeName %>> {
+        match svc.<%= underscore(method.Name) %>(data) {
+            Ok(resp) => Json(resp),
+            Err(msg) => Json(<%= method.OutputObject.TypeName %>::error(msg)),
+        }
+    }
 <% } %>
+
+
 
 pub struct <%= service.Name %>Server {
     rocket: rocket::Rocket,
@@ -26,9 +36,16 @@ pub struct <%= service.Name %>Server {
 impl <%= service.Name %>Server {
     pub fn new(svc: Box<dyn <%= service.Name %>>) -> <%= service.Name %>Server {
         let rocket = rocket::ignite()
-            .mount("/", routes![
-                <%= for (method) in service.Methods { %>
+            .mount("/", routes![index])
+            .mount("/oto", routes![
+                index,
+                <%= for (method) in service.Unique { %>
                     <%= underscore(service.Name) %>_<%= underscore(method.Name) %>,
+                <% } %>
+                <%= for (embedded) in service.Embedded { %>
+                <%= for (method) in embedded.Unique { %>
+                    <%= underscore(embedded.Name) %>_<%= underscore(method.Name) %>,
+                <% } %>
                 <% } %>
             ])
             .manage(svc);
@@ -67,6 +84,7 @@ impl FromDataSimple for <%= object.Name %> {
 <%= if (has(object, "Error")) { %>
 impl<'a> Responder<'a> for <%= object.Name %> {
     fn respond_to(self, _: &Request) -> response::Result<'a> {
+        panic!("Responder called");
         let status = match self.is_error() {
             true => Status::InternalServerError,
             false => Status::Ok,
@@ -92,10 +110,53 @@ impl<'a> Responder<'a> for <%= object.Name %> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use rocket::local::Client;
+
 <%= for (service) in def.Services { %>
-    #[test]
-    fn test_<%= underscore_type(service.Name) %>() {
-        <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::new()));
-    }
+    <%= for (method) in service.Unique { %>
+        #[test]
+        fn test_<%= underscore(service.Name) %>_<%= underscore(method.Name) %>_ok() {
+            let server = <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::new()));
+            let client = Client::new(server.rocket).expect("valid rocket instance");
+            let req = <%= method.InputObject.TypeName %>::new();
+            let body = serde_json::to_string(&req).unwrap();
+            let response = client.post("/oto/<%= service.Name %>.<%= method.Name %>")
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch();
+            assert_eq!(response.status(), Status::Ok);
+            assert_eq!(response.content_type(), Some(ContentType::JSON));
+            //assert!(response.headers().get_one("X-Special").is_some());
+            //assert_eq!(response.body_string(), Some("Expected Body".into()));
+        }
+
+        #[test]
+        fn test_<%= underscore(service.Name) %>_<%= underscore(method.Name) %>_error() {
+            let server = <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::error("purple")));
+            let client = Client::new(server.rocket).expect("valid rocket instance");
+            let req = <%= method.InputObject.TypeName %>::new();
+            let body = serde_json::to_string(&req).unwrap();
+            let mut response = client.post("/oto/<%= service.Name %>.<%= method.Name %>")
+                .header(ContentType::JSON)
+                .body(body)
+                .dispatch();
+            assert_eq!(response.status(), Status::InternalServerError);
+            assert_eq!(response.content_type(), Some(ContentType::JSON));
+            assert_eq!(response.body_string(), Some("{\"error\":\"purple\"}".into()));
+        }
+
+        #[test]
+        fn test_<%= underscore(service.Name) %>_<%= underscore(method.Name) %>_bad_request() {
+            let server = <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::error("purple")));
+            let client = Client::new(server.rocket).expect("valid rocket instance");
+            let mut response = client.post("/oto/<%= service.Name %>.<%= method.Name %>")
+                .header(ContentType::JSON)
+                .body(String::from("asdjfmmvzzi"))
+                .dispatch();
+            assert_eq!(response.status(), Status::BadRequest);
+            assert_eq!(response.content_type(), Some(ContentType::JSON));
+            assert_eq!(response.body_string(), Some("{\"error\":\"purple\"}".into()));
+        }
+    <% } %>
 <% } %>
 }
