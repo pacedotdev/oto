@@ -26,6 +26,9 @@
 //      use crate::types::*;
 //      ...
 //
+// Make sure to run `cargo test` to ensure the mock implementation works.
+//
+
 use std::io::Read;
 use rocket::{Request, State, Data, Outcome::*};
 use rocket::config::{Config, Environment};
