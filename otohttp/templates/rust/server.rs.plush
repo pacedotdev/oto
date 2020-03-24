@@ -1,19 +1,18 @@
-#![feature(proc_macro_hygiene)]
-
-use rocket::{Request, State, Outcome};
-use rocket::http::{Status, ContentType};
+use std::io::Read;
+use rocket::{Request, State, Data, Outcome::*};
+use rocket::data::{self, FromDataSimple, Outcome};
+use rocket::http::{ContentType, Status};
+use rocket::response::{self, Responder, Response};
 use rocket_contrib::json::Json;
-use rocket::response::{self, Response, Responder};
 use serde_json;
 use std::io::Cursor;
-
-pub use crate::types::*;
+use crate::types::*;
 
 <%= for (service) in def.Services { %>
 <%= for (method) in service.Methods { %>
-#[post("/oto/<%= service.Name %>.<%= method.Name %>")]
-fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> Json<<%= method.OutputObject.TypeName %>> {
-    match svc.<%= underscore(method.Name) %>(req) {
+#[post("/oto/<%= service.Name %>.<%= method.Name %>", format = "json", data = "<data>")]
+fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> Json<<%= method.OutputObject.TypeName %>> {
+    match svc.<%= underscore(method.Name) %>(data) {
         Ok(resp) => Json(resp),
         Err(msg) => Json(<%= method.OutputObject.TypeName %>::error(msg)),
     }
@@ -43,23 +42,25 @@ impl <%= service.Name %>Server {
 
 <% } %>
 
-
-
 <%= for (object) in def.Objects { %>
 
-//impl rocket::data::FromDataSimple for <%= object.Name %> {
-//    type Error = String;
-//
-//    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
-//        Success(<%= object.Name %>::new())
-//    }
-//}
-
-impl<'a, 'r> rocket::request::FromRequest<'a, 'r> for <%= object.Name %> {
+impl FromDataSimple for <%= object.Name %> {
     type Error = String;
 
-    fn from_request(request: &'a Request<'r>) -> rocket::request::Outcome<Self, Self::Error> {
-        Outcome::Success(<%= object.Name %>::new())
+
+    fn from_data(req: &Request, data: Data) -> Outcome<Self, String> {
+        let json_ct = ContentType::new("application", "json");
+        if req.content_type() != Some(&json_ct) {
+            return Outcome::Forward(data);
+        }
+        let mut body = String::new();
+        if let Err(e) = data.open().read_to_string(&mut body) {
+            return Failure((Status::InternalServerError, format!("{:?}", e)));
+        }
+        match serde_json::from_str::<<%= object.Name %>>(&body) {
+            Ok(value) => Success(value),
+            Err(e) => Failure((Status::BadRequest, format!("{:?}", e))),
+        }
     }
 }
 
