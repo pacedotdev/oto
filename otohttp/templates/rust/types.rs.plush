@@ -45,6 +45,9 @@ impl <%= object.Name %> {
     pub(crate) fn is_error(&self) -> bool {
         self.error != None
     }
+    pub(crate) fn take_error(&mut self) -> Option<String> {
+        self.error.take()
+    }
     <% } %>
     
     pub fn make(

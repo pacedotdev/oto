@@ -40,28 +40,34 @@ impl <%= service.Name %> for <%= service.Name %>BlockingClient {
 	fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
         let body = match serde_json::to_string(&req) {
             Ok(body) => body,
-            Err(e) => return Err(String::from("")),
+            Err(e) => return Err(format!("{:?}", e)),
         };
         let resp: Result<reqwest::blocking::Response, reqwest::Error> = self.client
             .post(&self.<%= underscore(method.Name) %>_endpoint)
             .body(reqwest::blocking::Body::from(body))
             .send();
-        let text = match resp {
+        let (text, status) = match resp {
             Ok(res) => {
-                if res.status() != 200 {
-                    return Err(String::from(""));
-                }
+                let status = res.status();
                 match res.text() {
-                    Ok(text) => text,
-                    Err(e) => return Err(String::from("")),
+                    Ok(text) => (text, status),
+                    Err(e) => return Err(format!("{:?}", e)),
                 }
             },
-            Err(e) => return Err(String::from("")),
+            Err(e) => return Err(format!("{:?}", e)),
         };
-        match serde_json::from_str::<<%= method.OutputObject.TypeName %>>(&text) {
-            Ok(value) => Ok(value),
-            Err(e) => Err(String::from("")),
-        }
+        let mut obj = match serde_json::from_str::<<%= method.OutputObject.TypeName %>>(&text) {
+            Ok(value) => value,
+            Err(e) => return Err(format!("{:?}", e)),
+        };
+        if status == 200 {
+            Ok(obj)
+        } else {
+            match obj.take_error() {
+                    Some(msg) => Err(msg),
+                    None => Err(format!("status code {}", status))
+                }
+            }
     }<% } %>
 }
 <% } %>

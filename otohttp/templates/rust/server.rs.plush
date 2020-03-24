@@ -137,16 +137,6 @@ mod <%= underscore(service.Name) %> {
 
     <%= for (method) in service.Unique { %>
         #[test]
-        fn test_<%= underscore(method.Name) %>() {
-        }
-    <% } %>
-
-    <%= for (embedded) in service.Embedded { %>
-    mod <%= underscore(embedded.Name) %> {
-        use super::*;
-
-        <%= for (method) in embedded.Unique { %>
-            #[test]
         fn test_<%= underscore(method.Name) %>_ok() {
             assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(Default::default()).is_ok());
         }
@@ -159,6 +149,25 @@ mod <%= underscore(service.Name) %> {
                 .expect("should panic because its an error");
         }
     <% } %>
+
+    <%= for (embedded) in service.Embedded { %>
+    mod <%= underscore(embedded.Name) %> {
+        use super::*;
+
+        <%= for (method) in embedded.Unique { %>
+            #[test]
+            fn test_<%= underscore(method.Name) %>_ok() {
+                assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(Default::default()).is_ok());
+            }
+
+            #[test]
+            #[should_panic]
+            fn test_<%= underscore(method.Name) %>_error() {
+                Mock<%= service.Name %>::error("quaranstream")
+                    .<%= underscore(method.Name) %>(Default::default())
+                    .expect("should panic because its an error");
+            }
+        <% } %>
     }
     <% } %>
 }
