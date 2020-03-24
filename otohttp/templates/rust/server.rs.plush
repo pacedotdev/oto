@@ -1,13 +1,41 @@
+// Instructions for Rocket Server https://rocket.rs/
+//
+// Add the following dependencies to Cargo.toml:
+//
+//      [dependencies.rocket]
+//      version = "0.4.4"
+//
+//      [dependencies.rocket_contrib]
+//      version = "0.4.4"
+//      default-features = false
+//      features = ["json"]
+//
+// Add the following crate declarations to your main.rs:
+//
+//      #![feature(proc_macro_hygiene, decl_macro)]
+//      #[macro_use] extern crate rocket;
+//      #[macro_use] extern crate rocket_contrib;
+//      #[macro_use] extern crate serde_derive;
+//
+// Also in main.rs, include the generated modules:
+//
+//      mod server;
+//      mod types;
+//      ...
+//      use crate::server::*;
+//      use crate::types::*;
+//      ...
+//
 use std::io::Read;
 use rocket::{Request, State, Data, Outcome::*};
 use rocket::config::{Config, Environment};
 use rocket::data::{FromDataSimple, Outcome};
 use rocket::http::{ContentType, Status};
 use rocket::response::{self, Responder, Response};
-use rocket_contrib::json::Json;
 use serde_json;
 use std::io::Cursor;
 use crate::types::*;
+use rocket_contrib::json::JsonValue;
 
 fn error_json(msg: &str) -> String {
     format!("{{\"error\":\"{}\"}}", msg)
@@ -16,6 +44,11 @@ fn error_json(msg: &str) -> String {
 #[post("/")]
 fn index() -> &'static str {
     "It works!"
+}
+
+#[catch(400)]
+fn bad_request(req: &Request) -> JsonValue {
+    json!({"error": "error deserializing request"})
 }
 
 <%= for (service) in def.Services { %>
@@ -44,8 +77,8 @@ impl <%= service.Name %>Server {
             .address("0.0.0.0")
             .port(8000)
             .unwrap();
-            //.register(catchers![bad_request])
         let rocket = rocket::custom(config)
+            .register(catchers![bad_request])
             .mount("/", routes![index])
             .mount("/oto", routes![
                 index,
@@ -133,14 +166,15 @@ mod test {
             let client = Client::new(server.rocket).expect("valid rocket instance");
             let req = <%= method.InputObject.TypeName %>::new();
             let body = serde_json::to_string(&req).unwrap();
-            let response = client.post("/oto/<%= service.Name %>.<%= method.Name %>")
+            let mut response = client.post("/oto/<%= service.Name %>.<%= method.Name %>")
                 .header(ContentType::JSON)
                 .body(body)
                 .dispatch();
             assert_eq!(response.status(), Status::Ok);
             assert_eq!(response.content_type(), Some(ContentType::JSON));
-            //assert!(response.headers().get_one("X-Special").is_some());
-            //assert_eq!(response.body_string(), Some("Expected Body".into()));
+            let expected = <%= method.OutputObject.TypeName %>::new();
+            let expected_json = serde_json::to_string(&expected).unwrap();
+            assert_eq!(response.body_string(), Some(expected_json.into()));
         }
 
         #[test]
@@ -167,9 +201,7 @@ mod test {
                 .body(String::from("asdjfmmvzzi"))
                 .dispatch();
             assert_eq!(response.status(), Status::BadRequest);
-            //assert_eq!(response.status(), Status::InternalServerError);
-            //assert_eq!(response.content_type(), Some(ContentType::JSON));
-            //assert_eq!(response.body_string(), Some("{\"error\":\"purple\"}".into()));
+            assert_eq!(response.body_string(), Some("{\"error\":\"error deserializing request\"}".into()));
         }
     <% } %>
 <% } %>
