@@ -15,6 +15,7 @@ func render(template string, def definition, params map[string]interface{}) (str
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("rust_type", rustType)
+	ctx.Set("has", has)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -71,4 +72,15 @@ func rustType(s string) string {
 	default:
 		return s
 	}
+}
+
+// camelizeDown converts a name or other string into a camel case
+// version with the first letter lowercase. "ModelID" becomes "modelID".
+func has(input object, fieldName string) bool {
+	for _, field := range input.Fields {
+		if field.Name == fieldName {
+			return true
+		}
+	}
+	return false
 }

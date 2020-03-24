@@ -1,45 +1,85 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+#![feature(proc_macro_hygiene)]
 
-#[macro_use]
-extern crate rocket;
-#[macro_use]
-extern crate rocket_contrib;
-#[macro_use]
-extern crate serde_derive;
-use rocket::State;
-use rocket_contrib::json::{Json, JsonValue};
+use rocket::{Request, State, Outcome};
+use rocket::http::{Status, ContentType};
+use rocket_contrib::json::Json;
+use rocket::response::{self, Response, Responder};
+use serde_json;
+use std::io::Cursor;
 
 pub use crate::types::*;
 
 <%= for (service) in def.Services { %>
 <%= for (method) in service.Methods { %>
-#[post("/oto/<%= service.Name %>.<%= method.Name %>", format = "application/json", data = "<req>")]
-fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>, state: State<<%= service.Name %>ServerState>) -> Json<<%= method.OutputObject.TypeName %>> {
-    match self.svc.<%= method.Name %>(req) {
+#[post("/oto/<%= service.Name %>.<%= method.Name %>")]
+fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(req: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> Json<<%= method.OutputObject.TypeName %>> {
+    match svc.<%= underscore(method.Name) %>(req) {
         Ok(resp) => Json(resp),
         Err(msg) => Json(<%= method.OutputObject.TypeName %>::error(msg)),
     }
 }
 <% } %>
 
-struct <%= service.Name %>ServerState {
-    svc: &<%= service.Name %>,
-}
 pub struct <%= service.Name %>Server {
     rocket: rocket::Rocket,
 }
 
 impl <%= service.Name %>Server {
-    pub fn new(svc: &<%= service.Name %>) -> <%= service.Name %>Server {
+    pub fn new(svc: Box<dyn <%= service.Name %>>) -> <%= service.Name %>Server {
         let rocket = rocket::ignite()
-            .mount("/", routes![])
-            .manage(<%= service.Name %>ServerState{ svc });
+            .mount("/", routes![
+                <%= for (method) in service.Methods { %>
+                    <%= underscore(service.Name) %>_<%= underscore(method.Name) %>,
+                <% } %>
+            ])
+            .manage(svc);
         <%= service.Name %>Server { rocket }
     }
 
-    pub fn listen(&mut self) -> rocket::LaunchError {
+    pub fn listen(self) -> rocket::error::LaunchError {
         self.rocket.launch()
     }
 }
 
+<% } %>
+
+
+
+<%= for (object) in def.Objects { %>
+
+//impl rocket::data::FromDataSimple for <%= object.Name %> {
+//    type Error = String;
+//
+//    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+//        Success(<%= object.Name %>::new())
+//    }
+//}
+
+impl<'a, 'r> rocket::request::FromRequest<'a, 'r> for <%= object.Name %> {
+    type Error = String;
+
+    fn from_request(request: &'a Request<'r>) -> rocket::request::Outcome<Self, Self::Error> {
+        Outcome::Success(<%= object.Name %>::new())
+    }
+}
+
+<%= if (has(object, "Error")) { %>
+impl<'a> Responder<'a> for <%= object.Name %> {
+    fn respond_to(self, _: &Request) -> response::Result<'a> {
+        let status = match self.is_error() {
+            true => Status::InternalServerError,
+            false => Status::Ok,
+        };
+        let body = match serde_json::to_string(&self) {
+            Ok(body) => body,
+            Err(e) => panic!("unable to serialize response json"),
+        };
+        Response::build()
+            .header(ContentType::JSON)
+            .status(status)
+            .sized_body(Cursor::new(body))
+            .ok()
+    }
+}
+<% } %>
 <% } %>
