@@ -73,7 +73,11 @@ impl<'a> Responder<'a> for <%= object.Name %> {
         };
         let body = match serde_json::to_string(&self) {
             Ok(body) => body,
-            Err(e) => panic!("unable to serialize response json"),
+            Err(e) => return Response::build()
+                .header(ContentType::Plain)
+                .status(Status::InternalServerError)
+                .sized_body(Cursor::new(format!("{:?}", e)))
+                .ok(),
         };
         Response::build()
             .header(ContentType::JSON)
@@ -87,89 +91,11 @@ impl<'a> Responder<'a> for <%= object.Name %> {
 
 #[cfg(test)]
 mod test {
-    
+    use super::*;
 <%= for (service) in def.Services { %>
-mod <%= underscore(service.Name) %> {
-    use super::super::*;
-    
-    struct Mock<%= service.Name %> {
-        error: Option<&'static str>,
-    }
-
-    impl Mock<%= service.Name %> {
-        fn new() -> Mock<%= service.Name %> {
-            Mock<%= service.Name %> { error: None }
-        }
-
-        fn error(message: &'static str) -> Mock<%= service.Name %> {
-            Mock<%= service.Name %>{ error: Some(message) }
-        }
-    }
-
-    <%= for (embedded) in service.Embedded { %>
-        impl <%= embedded.Name %> for Mock<%= service.Name %> {
-            <%= for (method) in embedded.Unique { %>
-                fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
-                    match self.error {
-                        Some(msg) => Err(String::from(msg)),
-                        None => Ok(Default::default()),
-                    }
-                }
-            <% } %>
-        }
-    <% } %>
-
-    impl <%= service.Name %> for Mock<%= service.Name %> {
-        <%= for (method) in service.Unique { %>
-            fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
-                match self.error {
-                    Some(msg) => Err(String::from(msg)),
-                    None => Ok(Default::default()),
-                }
-            }
-        <% } %>
-    }
-
     #[test]
-    fn test_types() {
-        let server = <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::new()));
+    fn test_<%= underscore_type(service.Name) %>() {
+        <%= service.Name %>Server::new(Box::new(Mock<%= service.Name %>::new()));
     }
-
-    <%= for (method) in service.Unique { %>
-        #[test]
-        fn test_<%= underscore(method.Name) %>_ok() {
-            assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(Default::default()).is_ok());
-        }
-
-        #[test]
-        #[should_panic]
-        fn test_<%= underscore(method.Name) %>_error() {
-            Mock<%= service.Name %>::error("quaranstream")
-                .<%= underscore(method.Name) %>(Default::default())
-                .expect("should panic because its an error");
-        }
-    <% } %>
-
-    <%= for (embedded) in service.Embedded { %>
-    mod <%= underscore(embedded.Name) %> {
-        use super::*;
-
-        <%= for (method) in embedded.Unique { %>
-            #[test]
-            fn test_<%= underscore(method.Name) %>_ok() {
-                assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(Default::default()).is_ok());
-            }
-
-            #[test]
-            #[should_panic]
-            fn test_<%= underscore(method.Name) %>_error() {
-                Mock<%= service.Name %>::error("quaranstream")
-                    .<%= underscore(method.Name) %>(Default::default())
-                    .expect("should panic because its an error");
-            }
-        <% } %>
-    }
-    <% } %>
-}
 <% } %>
 }
