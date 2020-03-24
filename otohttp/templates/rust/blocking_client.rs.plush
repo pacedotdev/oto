@@ -12,7 +12,7 @@ pub struct <%= service.Name %>BlockingClient {
 }
 
 impl <%= service.Name %>BlockingClient {
-    pub fn new(endpoint: String) -> <%= service.Name %>BlockingClient {
+    pub fn new(endpoint: String) -> Self {
         <%= for (method) in service.Methods { %>
         let <%= underscore(method.Name) %>_endpoint = format!("{}/oto/<%= service.Name %>.<%= method.Name %>", &endpoint);
         <% } %>

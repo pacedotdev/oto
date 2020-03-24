@@ -77,7 +77,7 @@ pub struct <%= service.Name %>Server {
 }
 
 impl <%= service.Name %>Server {
-    pub fn new(svc: Box<dyn <%= service.Name %>>) -> <%= service.Name %>Server {
+    pub fn new(svc: Box<dyn <%= service.Name %>>) -> Self {
         let config = Config::build(Environment::Staging)
             .address("0.0.0.0")
             .port(8000)

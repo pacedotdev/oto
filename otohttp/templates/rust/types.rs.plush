@@ -28,7 +28,7 @@ pub struct <%= object.Name %> {<%= for (field) in object.Fields { %>
 <% } %>}
 
 impl <%= object.Name %> {
-    pub fn new() -> <%= object.Name %> {
+    pub fn new() -> Self {
         <%= object.Name %>{
             <%= for (field) in object.Fields { %>
                 <%= underscore(field.Name) %>:
@@ -40,18 +40,6 @@ impl <%= object.Name %> {
             <% } %>
         }
     }
-
-    <%= if (has(object, "Error")) { %>
-    pub(crate) fn is_error(&self) -> bool {
-        self.error != None
-    }
-    pub(crate) fn get_error(&self) -> Option<&String> {
-        self.error.as_ref()
-    }
-    pub(crate) fn take_error(&mut self) -> Option<String> {
-        self.error.take()
-    }
-    <% } %>
     
     pub fn make(
         <%= for (field) in object.Fields { %>
@@ -63,7 +51,7 @@ impl <%= object.Name %> {
             <% } else {%>
             <% } %>
         <% } %>
-    ) -> <%= object.Name %> {
+    ) -> Self {
         <%= object.Name %>{
             <%= for (field) in object.Fields { %>
                 <%= if (field.Name != "Error") { %>
@@ -77,7 +65,7 @@ impl <%= object.Name %> {
     }
 
     <%= if (has(object, "Error")) { %>
-    pub fn error(msg: String) -> <%= object.Name %> {
+    pub fn error(msg: String) -> Self {
         <%= object.Name %>{
             error: Some(msg),
             <%= for (field) in object.Fields { %>
@@ -91,6 +79,18 @@ impl <%= object.Name %> {
                 <% } %>
             <% } %>
         }
+    }
+
+    pub(crate) fn is_error(&self) -> bool {
+        self.error != None
+    }
+    
+    pub(crate) fn get_error(&self) -> Option<&String> {
+        self.error.as_ref()
+    }
+
+    pub(crate) fn take_error(&mut self) -> Option<String> {
+        self.error.take()
     }
     <% } %>
 }
