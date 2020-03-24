@@ -42,18 +42,17 @@ impl <%= service.Name %> for <%= service.Name %>BlockingClient {
             Ok(body) => body,
             Err(e) => return Err(format!("{:?}", e)),
         };
-        let resp: Result<reqwest::blocking::Response, reqwest::Error> = self.client
+        let resp: reqwest::blocking::Response = match self.client
             .post(&self.<%= underscore(method.Name) %>_endpoint)
             .body(reqwest::blocking::Body::from(body))
-            .send();
-        let (text, status) = match resp {
-            Ok(res) => {
-                let status = res.status();
-                match res.text() {
-                    Ok(text) => (text, status),
-                    Err(e) => return Err(format!("{:?}", e)),
-                }
-            },
+            .send()
+        {
+            Ok(resp) => resp,
+            Err(e) => return Err(format!("{:?}", e)),
+        };
+        let status = resp.status();
+        let text = match resp.text() {
+            Ok(value) => value,
             Err(e) => return Err(format!("{:?}", e)),
         };
         let mut obj = match serde_json::from_str::<<%= method.OutputObject.TypeName %>>(&text) {
@@ -64,11 +63,12 @@ impl <%= service.Name %> for <%= service.Name %>BlockingClient {
             Ok(obj)
         } else {
             match obj.take_error() {
-                    Some(msg) => Err(msg),
-                    None => Err(format!("status code {}", status))
-                }
+                Some(msg) => Err(msg),
+                None => Err(format!("status code {}", status))
             }
-    }<% } %>
+        }
+    }
+    <% } %>
 }
 <% } %>
 
