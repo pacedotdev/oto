@@ -164,6 +164,7 @@ impl<'a> Responder<'a> for <%= object.Name %> {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::types::mock::*;
     use rocket::local::Client;
 
 <%= for (service) in def.Services { %>
