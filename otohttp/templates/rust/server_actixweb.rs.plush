@@ -1,0 +1,32 @@
+use actix_web::{get, web, App, HttpServer, Responder};
+pub use crate::types::*;
+
+<%= for (service) in def.Services { %>
+
+
+
+<%= for (method) in service.Unique { %>
+    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: web::Json<<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
+        web::HttpResponse::Ok().json(data.0)
+    }
+<% } %>
+
+
+pub struct <%= service.Name %>Server {
+}
+
+impl <%= service.Name %>Server {
+    pub fn new(svc: Box<dyn <%= service.Name %>>) -> Self {
+        <%= service.Name %>Server {}
+    }
+
+    pub fn make(svc: Box<dyn <%= service.Name %>>, address: &str, port: u16) -> Self {
+        <%= service.Name %>Server {}
+    }
+
+    pub fn listen(self) {
+    }
+}
+
+
+<% } %>

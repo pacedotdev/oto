@@ -28,16 +28,17 @@ impl <%= service.Name %>BlockingClient {
 <%= for (embedded) in service.Embedded { %>
     impl <%= embedded.Name %> for <%= service.Name %>BlockingClient {
         <%= for (method) in embedded.Unique { %>
-        fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
+        async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
             Ok(<%= method.OutputObject.TypeName %>::new())
         }<% } %>
     }
 <% } %>
 
+#[async_trait]
 impl <%= service.Name %> for <%= service.Name %>BlockingClient {
 
     <%= for (method) in service.Unique { %>
-	fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
+    async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
         let body = match serde_json::to_string(&req) {
             Ok(body) => body,
             Err(e) => return Err(format!("{:?}", e)),
