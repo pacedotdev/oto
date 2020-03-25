@@ -69,6 +69,12 @@ func rustType(s string) string {
 		return "u32"
 	case "uint64":
 		return "u64"
+	case "float32":
+		return "f32"
+	case "float64":
+		return "f64"
+	case "map[string]interface{}":
+		return "Object"
 	default:
 		return s
 	}
