@@ -1,4 +1,4 @@
-use actix_web::{get, web, App, HttpServer, Responder};
+use actix_web::{http::StatusCode, get, web, App, HttpServer, Responder};
 use crate::types;
 
 #[derive(Error, Debug)]
@@ -7,13 +7,27 @@ pub enum Error {
     MockError(String),
 }
 
+fn error_json<T: std::string::ToString>(e: T) -> String {
+    format!("{{\"error\":\"{}\"}}", e.to_string())
+}
+
+
 <%= for (service) in def.Services { %>
 
 
 
 <%= for (method) in service.Unique { %>
-    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
-        web::HttpResponse::Ok().json(data.0)
+    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %><E: std::error::Error + std::marker::Sync + std::marker::Send>(svc: web::Data<Box<types::<%= service.Name %><E>>>, req: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
+        let (status, body) = match svc.<%= underscore(method.Name) %>(req.into_inner()).await {
+            Ok(res) => match serde_json::to_string(&res) {
+                Ok(body) => (StatusCode::OK, body),
+                Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+            },
+            Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+        };
+        web::HttpResponse::build(status)
+            .content_type("application/json")
+            .body(body)
     }
 <% } %>
 
