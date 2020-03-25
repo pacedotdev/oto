@@ -62,7 +62,7 @@ fn bad_request(_: &Request) -> JsonValue {
 
 <%= for (method) in service.Unique { %>
     #[post("/<%= service.Name %>.<%= method.Name %>", format = "json", data = "<data>")]
-    fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %>>>) -> <%= method.OutputObject.TypeName %> {
+    fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: <%= method.InputObject.TypeName %>, svc: State<Box<dyn <%= service.Name %><Error>>>) -> <%= method.OutputObject.TypeName %> {
         match svc.<%= underscore(method.Name) %>(data) {
             Ok(resp) => resp,
             Err(msg) => <%= method.OutputObject.TypeName %>::error(msg),
@@ -77,11 +77,11 @@ pub struct <%= service.Name %>Server {
 }
 
 impl <%= service.Name %>Server {
-    pub fn new(svc: Box<dyn <%= service.Name %>>) -> Self {
+    pub fn new(svc: Box<dyn <%= service.Name %><Error>>) -> Self {
         <%= service.Name %>Server::make(svc, "0.0.0.0", 8000)
     }
 
-    pub fn make(svc: Box<dyn <%= service.Name %>>, address: &str, port: u16) -> Self {
+    pub fn make(svc: Box<dyn <%= service.Name %><Error>>, address: &str, port: u16) -> Self {
         let config = Config::build(Environment::Staging)
             .address(address)
             .port(port)

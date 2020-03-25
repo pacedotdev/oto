@@ -1,32 +1,20 @@
 use actix_web::{get, web, App, HttpServer, Responder};
-pub use crate::types::*;
+use crate::types;
+
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error("error: {0}")]
+    MockError(String),
+}
 
 <%= for (service) in def.Services { %>
 
 
 
 <%= for (method) in service.Unique { %>
-    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: web::Json<<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
+    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(data: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
         web::HttpResponse::Ok().json(data.0)
     }
 <% } %>
-
-
-pub struct <%= service.Name %>Server {
-}
-
-impl <%= service.Name %>Server {
-    pub fn new(svc: Box<dyn <%= service.Name %>>) -> Self {
-        <%= service.Name %>Server {}
-    }
-
-    pub fn make(svc: Box<dyn <%= service.Name %>>, address: &str, port: u16) -> Self {
-        <%= service.Name %>Server {}
-    }
-
-    pub fn listen(self) {
-    }
-}
-
 
 <% } %>
