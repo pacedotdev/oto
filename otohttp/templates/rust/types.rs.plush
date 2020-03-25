@@ -2,8 +2,6 @@
 
 use serde_json::{Value, Map};
 
-type Object = Map<String, Value>;
-
 <%= for (service) in def.Services { %>
 
     

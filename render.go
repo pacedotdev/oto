@@ -1,6 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
+	"strings"
+
 	"github.com/gobuffalo/plush"
 	"github.com/markbates/inflect"
 )
@@ -45,7 +49,7 @@ func underscore(s string) string {
 }
 
 // rustType converst the given type name to its rust equivalent
-func rustType(s string) string {
+func rustType(s string) template.HTML {
 	switch s {
 	case "string":
 		return "String"
@@ -73,10 +77,14 @@ func rustType(s string) string {
 		return "f32"
 	case "float64":
 		return "f64"
-	case "map[string]interface{}":
-		return "Object"
 	default:
-		return s
+		if strings.HasPrefix(s, "map[string]") {
+			if strings.HasSuffix(s, "interface{}") {
+				return "Map<String, Value>"
+			}
+			return template.HTML(fmt.Sprintf("Map<String, %s>", s[len("map[string]"):]))
+		}
+		return template.HTML(s)
 	}
 }
 
