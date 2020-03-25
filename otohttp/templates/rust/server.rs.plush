@@ -78,13 +78,16 @@ pub struct <%= service.Name %>Server {
 
 impl <%= service.Name %>Server {
     pub fn new(svc: Box<dyn <%= service.Name %>>) -> Self {
+        <%= service.Name %>Server::make(svc, "0.0.0.0", 8000)
+    }
+
+    pub fn make(svc: Box<dyn <%= service.Name %>>, address: &str, port: u16) -> Self {
         let config = Config::build(Environment::Staging)
-            .address("0.0.0.0")
-            .port(8000)
+            .address(address)
+            .port(port)
             .unwrap();
         let rocket = rocket::custom(config)
             .register(catchers![bad_request])
-            .mount("/", routes![index])
             .mount("/oto", routes![
                 index,
                 <%= for (method) in service.Unique { %>
