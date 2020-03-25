@@ -172,12 +172,12 @@ mod <%= underscore(service.Name) %> {
 
     <%= for (method) in service.Unique { %>
         #[tokio::test]
-        async fn test_<%= underscore(method.Name) %>_ok() {
+        async fn <%= underscore(method.Name) %>_ok() {
             assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>::new()).await.is_ok());
         }
 
         #[tokio::test]
-        async fn test_<%= underscore(method.Name) %>_error() {
+        async fn <%= underscore(method.Name) %>_error() {
             match Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
                 .<%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>::new())
                 .await
@@ -195,12 +195,12 @@ mod <%= underscore(service.Name) %> {
 
         <%= for (method) in embedded.Unique { %>
             #[tokio::test]
-            async fn test_<%= underscore(method.Name) %>_ok() {
+            async fn <%= underscore(method.Name) %>_ok() {
                 assert!(Mock<%= service.Name %>::new().<%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>::new()).await.is_ok());
             }
 
             #[tokio::test]
-            async fn test_<%= underscore(method.Name) %>_error() {
+            async fn <%= underscore(method.Name) %>_error() {
                 match Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
                     .<%= underscore(method.Name) %>(Default::default())
                     .await
