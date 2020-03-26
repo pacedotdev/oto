@@ -7,15 +7,15 @@ use async_trait::async_trait;
 
     
 #[async_trait]
-pub trait <%= service.Name %><E: std::marker::Send + std::marker::Sync>: Send + Sync
+pub trait <%= service.Name %>: Send + Sync
 <%= if (len(service.Embedded) > 0) { %> 
     <%= for (i, embedded) in service.Embedded { %>
-        + <%= embedded.Name %><E>
+        + <%= embedded.Name %>
     <% } %>
 <% } %>
 {
     <%= for (method) in service.Unique { %>
-	async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, E>;<% } %>
+	async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String>;<% } %>
 }
 <% } %>
 
@@ -135,11 +135,11 @@ impl Mock<%= service.Name %> {
 
 <%= for (embedded) in service.Embedded { %>
     #[async_trait]
-    impl <%= embedded.Name %><Error> for Mock<%= service.Name %> {
+    impl <%= embedded.Name %> for Mock<%= service.Name %> {
         <%= for (method) in embedded.Unique { %>
-            async fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, Error> {
+            async fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
                 match self.error {
-                    Some(err) => Err(Error::MockError(err)),
+                    Some(err) => Err(String::from(err)),
                     None => Ok(Default::default()),
                 }
             }
@@ -148,11 +148,11 @@ impl Mock<%= service.Name %> {
 <% } %>
 
 #[async_trait]
-impl <%= service.Name %><Error> for Mock<%= service.Name %> {
+impl <%= service.Name %> for Mock<%= service.Name %> {
     <%= for (method) in service.Unique { %>
-        async fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, Error> {
+        async fn <%= underscore(method.Name) %>(&self, _ :<%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
             match self.error {
-                Some(err) => Err(Error::MockError(err)),
+                Some(err) => Err(String::from(err)),
                 None => Ok(Default::default()),
             }
         }
@@ -178,14 +178,12 @@ mod <%= underscore(service.Name) %> {
 
         #[tokio::test]
         async fn <%= underscore(method.Name) %>_error() {
-            match Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
+            assert_eq!(Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
                 .<%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>::new())
                 .await
                 .err()
-                .unwrap() {
-                Error::MockError(msg) => assert_eq!(msg, "hello from Mock<%= service.Name %>"),
-                _ => panic!("expected message")
-            }
+                .unwrap(),
+                "hello from Mock<%= service.Name %>");
         }
     <% } %>
 
@@ -201,14 +199,12 @@ mod <%= underscore(service.Name) %> {
 
             #[tokio::test]
             async fn <%= underscore(method.Name) %>_error() {
-                match Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
-                    .<%= underscore(method.Name) %>(Default::default())
+                assert_eq!(Mock<%= service.Name %>::error("hello from Mock<%= service.Name %>")
+                    .<%= underscore(method.Name) %>(<%= method.InputObject.TypeName %>::new())
                     .await
                     .err()
-                    .unwrap() {
-                    Error::MockError(msg) => assert_eq!(msg, "hello from Mock<%= service.Name %>"),
-                    _ => panic!("expected message")
-                }
+                    .unwrap(),
+                    "hello from Mock<%= service.Name %>");
             }
         <% } %>
     }

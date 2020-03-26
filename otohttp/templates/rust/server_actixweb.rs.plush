@@ -17,7 +17,7 @@ fn error_json<T: std::string::ToString>(e: T) -> String {
 
 
 <%= for (method) in service.Unique { %>
-    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %><E: std::error::Error + std::marker::Sync + std::marker::Send>(svc: web::Data<Box<types::<%= service.Name %><E>>>, req: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
+    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(svc: web::Data<Box<types::<%= service.Name %>>>, req: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
         let (status, body) = match svc.<%= underscore(method.Name) %>(req.into_inner()).await {
             Ok(res) => match serde_json::to_string(&res) {
                 Ok(body) => (StatusCode::OK, body),

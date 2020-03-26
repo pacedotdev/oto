@@ -10,22 +10,20 @@ pub enum Error {
 }
 
 <%= for (service) in def.Services { %>
-pub struct <%= service.Name %>AsyncClient<E: Send> {
+pub struct <%= service.Name %>AsyncClient {
     client: reqwest::Client,
-    phantom: std::marker::PhantomData<E>,
     <%= for (method) in service.Methods { %>
     <%= underscore(method.Name) %>_endpoint: String,
     <% } %>
 }
 
-impl<E> <%= service.Name %>AsyncClient<E> where E: std::marker::Send + std::marker::Sync {
+impl <%= service.Name %>AsyncClient {
     pub fn new(endpoint: String) -> Self {
         <%= for (method) in service.Methods { %>
         let <%= underscore(method.Name) %>_endpoint = format!("{}/oto/<%= service.Name %>.<%= method.Name %>", &endpoint);
         <% } %>
         <%= service.Name %>AsyncClient{
             client: reqwest::Client::new(),
-            phantom: std::marker::PhantomData,
             <%= for (method) in service.Methods { %>
             <%= underscore(method.Name) %>_endpoint,
             <% } %>
@@ -35,9 +33,9 @@ impl<E> <%= service.Name %>AsyncClient<E> where E: std::marker::Send + std::mark
 
 <%= for (embedded) in service.Embedded { %>
     #[async_trait]
-    impl<E> <%= embedded.Name %><E> for <%= service.Name %>AsyncClient<E> where E: std::marker::Send + std::marker::Sync {
+    impl <%= embedded.Name %> for <%= service.Name %>AsyncClient {
         <%= for (method) in embedded.Unique { %>
-        async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, E> {
+        async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
             Ok(<%= method.OutputObject.TypeName %>::new())
         }<% } %>
     }
@@ -45,9 +43,9 @@ impl<E> <%= service.Name %>AsyncClient<E> where E: std::marker::Send + std::mark
 
 
 #[async_trait]
-impl<E> <%= service.Name %><E> for <%= service.Name %>AsyncClient<E> where E: std::marker::Send + std::marker::Sync {
+impl <%= service.Name %> for <%= service.Name %>AsyncClient {
     <%= for (method) in service.Unique { %>
-    async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, E> {
+    async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
         //let result: <%= method.OutputObject.TypeName %> = reqwest::Client::new()
         //    .post(self.<%= underscore(method.Name) %>_endpoint)
         //    .json(&req)
