@@ -113,6 +113,90 @@ mod tests {
                 assert_eq!(result, expected);
             }
         <% } %>
+
+        <%= for (embedded) in service.Embedded { %>
+        <%= for (method) in embedded.Unique { %>
+            #[actix_rt::test]
+            async fn <%= underscore(method.Name) %>_ok() {
+                let <%= underscore(service.Name) %>_endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
+                let <%= underscore(embedded.Name) %>_endpoint = "/oto/<%= embedded.Name %>.<%= method.Name %>";
+                let body = types::<%= method.InputObject.TypeName %>::new();
+                let svc = types::mock::Mock<%= service.Name %>::new();
+                let mut app = test::init_service(actix_web::App::new()
+                    .data(svc.clone())
+                    .service(
+                        actix_web::web::resource(<%= underscore(service.Name) %>_endpoint).to(super::super::<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    ).service(
+                        actix_web::web::resource(<%= underscore(embedded.Name) %>_endpoint).to(super::super::<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    )).await;
+                {
+                    // Test the endpoint mounted at /oto/<%= service.Name %>.<%= method.Name %>
+                    let req = test::TestRequest::post()
+                        .uri(<%= underscore(service.Name) %>_endpoint)
+                        .set_json(&body)
+                        .to_request();
+                    let resp = test::call_service(&mut app, req).await;
+                    assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+                    let result = test::read_body(resp).await;
+                    let obj = types::<%= method.OutputObject.TypeName %>::new();
+                    let expected = serde_json::to_string(&obj).unwrap();
+                    assert_eq!(result, expected);
+                }
+                {
+                    // Test the endpoint mounted at /oto/<%= embedded.Name %>.<%= method.Name %>
+                    let req = test::TestRequest::post()
+                        .uri(<%= underscore(embedded.Name) %>_endpoint)
+                        .set_json(&body)
+                        .to_request();
+                    let resp = test::call_service(&mut app, req).await;
+                    assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+                    let result = test::read_body(resp).await;
+                    let obj = types::<%= method.OutputObject.TypeName %>::new();
+                    let expected = serde_json::to_string(&obj).unwrap();
+                    assert_eq!(result, expected);
+                }
+            }
+
+            #[actix_rt::test]
+            async fn <%= underscore(method.Name) %>_error() {
+                let <%= underscore(service.Name) %>_endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
+                let <%= underscore(embedded.Name) %>_endpoint = "/oto/<%= embedded.Name %>.<%= method.Name %>";
+                let body = types::<%= method.InputObject.TypeName %>::new();
+                let svc = types::mock::Mock<%= service.Name %>::error("Hello from <%= service.Name %>.<%= method.Name %>!");
+                let mut app = test::init_service(actix_web::App::new()
+                    .data(svc.clone())
+                    .service(
+                        actix_web::web::resource(<%= underscore(service.Name) %>_endpoint).to(super::super::<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    ).service(
+                        actix_web::web::resource(<%= underscore(embedded.Name) %>_endpoint).to(super::super::<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    )).await;
+                {
+                    // Test the endpoint mounted at /oto/<%= service.Name %>.<%= method.Name %>
+                    let req = test::TestRequest::post()
+                        .uri(<%= underscore(service.Name) %>_endpoint)
+                        .set_json(&body)
+                        .to_request();
+                    let resp = test::call_service(&mut app, req).await;
+                    assert_eq!(resp.status(), actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
+                    let result = test::read_body(resp).await;
+                    let expected = error_json("Hello from <%= service.Name %>.<%= method.Name %>!");
+                    assert_eq!(result, expected);
+                }
+                {
+                    // Test the endpoint mounted at /oto/<%= embedded.Name %>.<%= method.Name %>
+                    let req = test::TestRequest::post()
+                        .uri(<%= underscore(embedded.Name) %>_endpoint)
+                        .set_json(&body)
+                        .to_request();
+                    let resp = test::call_service(&mut app, req).await;
+                    assert_eq!(resp.status(), actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
+                    let result = test::read_body(resp).await;
+                    let expected = error_json("Hello from <%= service.Name %>.<%= method.Name %>!");
+                    assert_eq!(result, expected);
+                }
+            }
+        <% } %>
+        <% } %>
     }
 <% } %>
 
