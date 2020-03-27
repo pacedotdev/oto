@@ -7,7 +7,7 @@ use async_trait::async_trait;
 
     
 #[async_trait]
-pub trait <%= service.Name %>: Send + Sync
+pub trait <%= service.Name %> : std::marker::Send + std::marker::Sync
 <%= if (len(service.Embedded) > 0) { %> 
     <%= for (i, embedded) in service.Embedded { %>
         + <%= embedded.Name %>
@@ -119,6 +119,7 @@ pub mod mock {
 
 <%= for (service) in def.Services { %>
 
+#[derive(Clone)]
 pub struct Mock<%= service.Name %> {
     error: Option<&'static str>,
 }

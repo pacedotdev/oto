@@ -1,34 +1,119 @@
-use actix_web::{http::StatusCode, get, web, App, HttpServer, Responder};
+use actix_web;
 use crate::types;
-
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("error: {0}")]
-    MockError(String),
-}
+use futures;
 
 fn error_json<T: std::string::ToString>(e: T) -> String {
     format!("{{\"error\":\"{}\"}}", e.to_string())
 }
 
-
 <%= for (service) in def.Services { %>
-
-
+pub mod <%= underscore(service.Name) %> {
+    use super::*;
 
 <%= for (method) in service.Unique { %>
-    async fn <%= underscore(service.Name) %>_<%= underscore(method.Name) %>(svc: web::Data<Box<types::<%= service.Name %>>>, req: web::Json<types::<%= method.InputObject.TypeName %>>) -> web::HttpResponse {
+    pub async fn <%= underscore(method.Name) %><'a, T>(svc: actix_web::web::Data<T>, req: actix_web::web::Json<types::<%= method.InputObject.TypeName %>>) -> impl actix_web::Responder where T: types::<%= service.Name %> + 'a {
         let (status, body) = match svc.<%= underscore(method.Name) %>(req.into_inner()).await {
             Ok(res) => match serde_json::to_string(&res) {
-                Ok(body) => (StatusCode::OK, body),
-                Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+                Ok(body) => (actix_web::http::StatusCode::OK, body),
+                Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(format!("error serializing response: {:?}", e))),
             },
-            Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+            Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
         };
-        web::HttpResponse::build(status)
+        actix_web::web::HttpResponse::build(status)
             .content_type("application/json")
             .body(body)
     }
 <% } %>
 
+}
 <% } %>
+
+
+/*
+<%= for (object) in def.Objects { %>
+impl actix_web::Responder for types::<%= object.Name %> {
+    type Error = actix_web::Error;
+    type Future = futures::future::Ready<Result<actix_web::HttpResponse, actix_web::Error>>;
+
+    fn respond_to(self, _req: &actix_web::HttpRequest) -> Self::Future {
+        <%= if (has(object, "Error")) { %>
+            let (status, body) = match self.get_error() {
+                Some(msg) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(msg)),
+                None => match serde_json::to_string(&self) {
+                    Ok(body) => (actix_web::http::StatusCode::OK, body),
+                    Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+                },
+            };
+        <% } else { %>
+            let (status, body) = match serde_json::to_string(&self) {
+                Ok(body) => (actix_web::http::StatusCode::OK, body),
+                Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+            };
+        <% } %>
+        futures::future::ready(Ok(actix_web::web::HttpResponse::build(status)
+            .content_type("application/json")
+            .body(body)))
+    }
+}
+<% } %>*/
+
+#[cfg(test)]
+mod tests {
+<%= for (service) in def.Services { %>
+    mod <%= underscore(service.Name) %> {
+        use super::super::*;
+        use actix_web::test;
+
+        async fn index() -> impl actix_web::Responder {
+            String::from("Hello, world!")
+        }
+
+
+        <%= for (method) in service.Unique { %>
+            #[actix_rt::test]
+            async fn <%= underscore(method.Name) %>_ok() {
+                let endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
+                let body = types::<%= method.InputObject.TypeName %>::new();
+                let req = test::TestRequest::post()
+                    .uri(endpoint)
+                    .set_json(&body)
+                    .to_request();
+                let svc = types::mock::Mock<%= service.Name %>::new();
+                let mut app = test::init_service(actix_web::App::new()
+                    .data(svc.clone())
+                    .service(
+                        actix_web::web::resource(endpoint).to(super::super::<%= underscore(service.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    )).await;
+                let resp = test::call_service(&mut app, req).await;
+                assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+                let result = test::read_body(resp).await;
+                let obj = types::<%= method.OutputObject.TypeName %>::new();
+                let expected = serde_json::to_string(&obj).unwrap();
+                assert_eq!(result, expected);
+            }
+
+            #[actix_rt::test]
+            async fn <%= underscore(method.Name) %>_error() {
+                let endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
+                let body = types::<%= method.InputObject.TypeName %>::new();
+                let req = test::TestRequest::post()
+                    .uri(endpoint)
+                    .set_json(&body)
+                    .to_request();
+                let svc = types::mock::Mock<%= service.Name %>::error("Hello from <%= service.Name %>.<%= method.Name %>!");
+                let mut app = test::init_service(actix_web::App::new()
+                    .data(svc.clone())
+                    .service(
+                        actix_web::web::resource(endpoint).to(super::super::<%= underscore(service.Name) %>::<%= underscore(method.Name) %>::<types::mock::Mock<%= service.Name %>>)
+                    )).await;
+                let resp = test::call_service(&mut app, req).await;
+                assert_eq!(resp.status(), actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
+                let result = test::read_body(resp).await;
+                let expected = error_json("Hello from <%= service.Name %>.<%= method.Name %>!");
+                assert_eq!(result, expected);
+            }
+        <% } %>
+    }
+<% } %>
+
+}
