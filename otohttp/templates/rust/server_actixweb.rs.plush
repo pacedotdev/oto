@@ -162,7 +162,7 @@ mod tests {
                 let <%= underscore(service.Name) %>_endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
                 let <%= underscore(embedded.Name) %>_endpoint = "/oto/<%= embedded.Name %>.<%= method.Name %>";
                 let body = types::<%= method.InputObject.TypeName %>::new();
-                let svc = types::mock::Mock<%= service.Name %>::error("Hello from <%= service.Name %>.<%= method.Name %>!");
+                let svc = types::mock::Mock<%= service.Name %>::error("Hello from <%= method.Name %>!");
                 let mut app = test::init_service(actix_web::App::new()
                     .data(svc.clone())
                     .service(
@@ -179,7 +179,8 @@ mod tests {
                     let resp = test::call_service(&mut app, req).await;
                     assert_eq!(resp.status(), actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
                     let result = test::read_body(resp).await;
-                    let expected = error_json("Hello from <%= service.Name %>.<%= method.Name %>!");
+                    // Should return embedded message about type
+                    let expected = error_json("Hello from <%= method.Name %>!");
                     assert_eq!(result, expected);
                 }
                 {
@@ -191,7 +192,7 @@ mod tests {
                     let resp = test::call_service(&mut app, req).await;
                     assert_eq!(resp.status(), actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
                     let result = test::read_body(resp).await;
-                    let expected = error_json("Hello from <%= service.Name %>.<%= method.Name %>!");
+                    let expected = error_json("Hello from <%= method.Name %>!");
                     assert_eq!(result, expected);
                 }
             }
