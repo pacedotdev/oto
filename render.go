@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"strings"
 
@@ -19,6 +18,7 @@ func render(template string, def definition, params map[string]interface{}) (str
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("rust_type", rustType)
+	ctx.Set("rust_default", rustDefault)
 	ctx.Set("has", has)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
@@ -46,6 +46,40 @@ func underscore(s string) string {
 		return "id"
 	}
 	return defaultRuleset.Underscore(s)
+}
+
+// rustDefault returns the rust code for the default value
+func rustDefault(s string) template.HTML {
+	switch s {
+	case "string":
+		return "String::new()"
+	case "int":
+		fallthrough
+	case "int8":
+		fallthrough
+	case "int16":
+		fallthrough
+	case "int32":
+		fallthrough
+	case "int64":
+		fallthrough
+	case "uint":
+		fallthrough
+	case "uint8":
+		fallthrough
+	case "uint16":
+		fallthrough
+	case "uint32":
+		fallthrough
+	case "uint64":
+		return "0"
+	case "float32":
+		fallthrough
+	case "float64":
+		return "0.0"
+	default:
+		return template.HTML("Default::default()")
+	}
 }
 
 // rustType converst the given type name to its rust equivalent
@@ -77,12 +111,14 @@ func rustType(s string) template.HTML {
 		return "f32"
 	case "float64":
 		return "f64"
+	case "interface{}":
+		return "Value"
 	default:
-		if strings.HasPrefix(s, "map[string]") {
-			if strings.HasSuffix(s, "interface{}") {
-				return "Map<String, Value>"
-			}
-			return template.HTML(fmt.Sprintf("Map<String, %s>", s[len("map[string]"):]))
+		if strings.HasPrefix(s, "map[") {
+			//keyType := "String"          //s[4:strings.Index(s[4:], "]")]
+			//valueType := rustType("int") //s[5+len(keyType):]
+			return template.HTML("Map<String, Value>")
+			//return template.HTML(fmt.Sprintf("Map<%s, %s>", keyType, valueType))
 		}
 		return template.HTML(s)
 	}
