@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"strings"
 
@@ -78,6 +79,11 @@ func rustDefault(s string) template.HTML {
 	case "float64":
 		return "0.0"
 	default:
+		if strings.HasPrefix(s, "map[") {
+			keyType := rustType(s[4 : 4+strings.Index(s[4:], "]")])
+			valueType := rustType(s[5+len(keyType):])
+			return template.HTML(fmt.Sprintf("std::collections::HashMap::<%s, %s>::new()", keyType, valueType))
+		}
 		return template.HTML("Default::default()")
 	}
 }
@@ -115,10 +121,10 @@ func rustType(s string) template.HTML {
 		return "Value"
 	default:
 		if strings.HasPrefix(s, "map[") {
-			//keyType := "String"          //s[4:strings.Index(s[4:], "]")]
-			//valueType := rustType("int") //s[5+len(keyType):]
-			return template.HTML("Map<String, Value>")
-			//return template.HTML(fmt.Sprintf("Map<%s, %s>", keyType, valueType))
+			keyType := rustType(s[4 : 4+strings.Index(s[4:], "]")])
+			valueType := rustType(s[5+len(keyType):])
+			//return template.HTML("Map<String, Value>")
+			return template.HTML(fmt.Sprintf("std::collections::HashMap<%s, %s>", keyType, valueType))
 		}
 		return template.HTML(s)
 	}
