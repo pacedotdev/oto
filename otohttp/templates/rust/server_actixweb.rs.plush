@@ -7,8 +7,29 @@ fn error_json<T: std::string::ToString>(e: T) -> String {
 }
 
 <%= for (service) in def.Services { %>
+
+
+
 pub mod <%= underscore(service.Name) %> {
     use super::*;
+
+    // address: e.g. "127.0.0.1:8080"
+    pub async fn <%= %>main<T>(svc: T, address: &str) -> std::io::Result<()> where T: types::<%= service.Name %> + 'static {
+        actix_web::HttpServer::new(|| actix_web::App::new()
+            <%= for (method) in service.Unique { %>
+                .service(actix_web::web::resource("/oto/<%= service.Name %>.<%= method.Name %>").to(<%= underscore(method.Name) %>::<T>))
+            <% } %>
+            <%= for (embedded) in service.Embedded { %>
+            <%= for (method) in embedded.Unique { %>
+                .service(actix_web::web::resource("/oto/<%= service.Name %>.<%= method.Name %>").to(<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<T>))
+                .service(actix_web::web::resource("/oto/<%= embedded.Name %>.<%= method.Name %>").to(<%= underscore(embedded.Name) %>::<%= underscore(method.Name) %>::<T>))
+            <% } %>
+            <% } %>
+        )
+            .bind(address)?
+            .run()
+            .await
+    }
 
 <%= for (method) in service.Unique { %>
     pub async fn <%= underscore(method.Name) %><'a, T>(svc: actix_web::web::Data<T>, req: actix_web::web::Json<types::<%= method.InputObject.TypeName %>>) -> impl actix_web::Responder where T: types::<%= service.Name %> + 'a {
