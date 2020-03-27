@@ -1,6 +1,5 @@
-use actix_web;
 use crate::types;
-use futures;
+use actix_web;
 
 fn error_json<T: std::string::ToString>(e: T) -> String {
     format!("{{\"error\":\"{}\"}}", e.to_string())
