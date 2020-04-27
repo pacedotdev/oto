@@ -3,12 +3,6 @@ pub use crate::types::*;
 use serde_json;
 use reqwest;
 
-#[derive(Error, Debug)]
-pub enum Error {
-    #[error("error: {0}")]
-    MockError(String),
-}
-
 <%= for (service) in def.Services { %>
 pub struct <%= service.Name %>AsyncClient {
     client: reqwest::Client,
@@ -36,7 +30,27 @@ impl <%= service.Name %>AsyncClient {
     impl <%= embedded.Name %> for <%= service.Name %>AsyncClient {
         <%= for (method) in embedded.Unique { %>
         async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
-            Ok(<%= method.OutputObject.TypeName %>::new())
+            match self.client
+                .post(&self.<%= underscore(method.Name) %>_endpoint)
+                .json(&req)
+                .send()
+                .await
+            {
+                Ok(resp) => {
+                    let status = resp.status();
+                    match resp.json().await {
+                        Ok(mut result) => match status {
+                            reqwest::StatusCode::OK => Ok(result),
+                            _ => match result.take_error() {
+                                Some(msg) => Err(msg),
+                                None => Err(format!("status code {}", status))
+                            }
+                        },
+                        Err(e) => Err(format!("{:?}", e))
+                    }
+                },
+                Err(e) => Err(format!("{:?}", e))
+            }
         }<% } %>
     }
 <% } %>
@@ -46,32 +60,27 @@ impl <%= service.Name %>AsyncClient {
 impl <%= service.Name %> for <%= service.Name %>AsyncClient {
     <%= for (method) in service.Unique { %>
     async fn <%= underscore(method.Name) %>(&self, req: <%= method.InputObject.TypeName %>) -> Result<<%= method.OutputObject.TypeName %>, String> {
-        //let result: <%= method.OutputObject.TypeName %> = reqwest::Client::new()
-        //    .post(self.<%= underscore(method.Name) %>_endpoint)
-        //    .json(&req)
-        //    .send()
-        //    .await?
-        //    .json()
-        //    .await?;
-        //return Ok(result);
-        //let status = resp.status();
-        //let text = match resp.text() {
-        //    Ok(value) => value,
-        //    Err(e) => return Err(format!("{:?}", e)),
-        //};
-        //let mut obj = match serde_json::from_str::<<%= method.OutputObject.TypeName %>>(&text) {
-        //    Ok(value) => value,
-        //    Err(e) => return Err(format!("{:?}", e)),
-        //};
-        //if status == 200 {
-        //    Ok(obj)
-        //} else {
-        //    match obj.take_error() {
-        //        Some(msg) => Err(msg),
-        //        None => Err(format!("status code {}", status))
-        //    }
-        //}
-        Ok(<%= method.OutputObject.TypeName %>::new())
+        match self.client
+            .post(&self.<%= underscore(method.Name) %>_endpoint)
+            .json(&req)
+            .send()
+            .await
+        {
+            Ok(resp) => {
+                let status = resp.status();
+                match resp.json().await {
+                    Ok(mut result) => match status {
+                        reqwest::StatusCode::OK => Ok(result),
+                        _ => match result.take_error() {
+                            Some(msg) => Err(msg),
+                            None => Err(format!("status code {}", status))
+                        }
+                    },
+                    Err(e) => Err(format!("{:?}", e))
+                }
+            },
+            Err(e) => Err(format!("{:?}", e))
+        }
     }
     <% } %>
 }

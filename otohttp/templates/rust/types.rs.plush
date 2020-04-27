@@ -21,8 +21,9 @@ pub trait <%= service.Name %> : std::marker::Send + std::marker::Sync
 <% } %>
 
 <%= for (object) in def.Objects { %>
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct <%= object.Name %> {<%= for (field) in object.Fields { %>
+    #[serde(rename = "<%= camelize_down(field.Name) %>")]
     <%= if (field.Name != "Error") { %>pub<% } %>
     <%= underscore(field.Name) %>:
     <%= if (field.OmitEmpty) { %> Option< <% } %>
@@ -48,24 +49,17 @@ impl <%= object.Name %> {
     
     pub fn make(
         <%= for (field) in object.Fields { %>
-            <%= if (field.Name != "Error") { %>
             <%= underscore(field.Name) %>:
             <%= if (field.OmitEmpty) { %> Option< <% } %>
                 <%= if (field.Type.Multiple) { %> Vec< <% } %>
                     <%= rust_type(field.Type.TypeName) %>
                 <%= if (field.Type.Multiple) { %> > <% } %>
             <%= if (field.OmitEmpty) { %> > <% } %>,
-            <% } %>
         <% } %>
     ) -> Self {
         <%= object.Name %>{
             <%= for (field) in object.Fields { %>
-                <%= if (field.Name != "Error") { %>
-                    <%= underscore(field.Name) %>,
-                <% } %>
-            <% } %>
-            <%= if (has(object, "Error")) { %>
-                error: None,
+                <%= underscore(field.Name) %>,
             <% } %>
         }
     }

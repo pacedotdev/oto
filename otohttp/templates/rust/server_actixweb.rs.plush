@@ -1,5 +1,6 @@
 use crate::types;
 use actix_web;
+use colored::*;
 
 fn error_json<T: std::string::ToString>(e: T) -> String {
     format!("{{\"error\":\"{}\"}}", e.to_string())
@@ -28,6 +29,7 @@ pub mod <%= underscore(service.Name) %> {
     // address: e.g. "127.0.0.1:8080"
     pub async fn main<T>(svc: T, address: &str) -> std::io::Result<()> where T: types::<%= service.Name %> + std::clone::Clone + 'static {
         actix_web::HttpServer::new(move || actix_web::App::new()
+            .wrap(actix_web::middleware::Logger::default())
             .data(svc.clone())
             .configure(routes::<T>)
         )
@@ -41,10 +43,21 @@ pub mod <%= underscore(service.Name) %> {
         let (status, body) = match svc.<%= underscore(method.Name) %>(req.into_inner()).await {
             Ok(res) => match serde_json::to_string(&res) {
                 Ok(body) => (actix_web::http::StatusCode::OK, body),
-                Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(format!("error serializing response: {:?}", e))),
+                Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(format!("error serializing response: {:?}", &e))),
             },
-            Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(e)),
+            Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(&e)),
         };
+        //let (status, body, error) = match svc.<%= underscore(method.Name) %>(req.into_inner()).await {
+        //    Ok(res) => match serde_json::to_string(&res) {
+        //        Ok(body) => (actix_web::http::StatusCode::OK, body, None),
+        //        Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(format!("error serializing response: {:?}", &e)), Some(format!("{:?}", &e))),
+        //    },
+        //    Err(e) => (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, error_json(&e), Some(format!("{:?}", &e))),
+        //};
+        //match &error {
+        //    None => println!("{}", "[200] <%= service.Name %>.<%= method.Name %>".green()),
+        //    Some(e) => println!("{} {}", "[500] <%= service.Name %>.<%= method.Name %>: {}".red(), e.red()),
+        //};
         actix_web::web::HttpResponse::build(status)
             .content_type("application/json")
             .body(body)
@@ -55,11 +68,56 @@ pub mod <%= underscore(service.Name) %> {
 <% } %>
 
 #[cfg(test)]
-mod tests {
+pub mod test {
 <%= for (service) in def.Services { %>
-    mod <%= underscore(service.Name) %> {
+    pub mod <%= underscore(service.Name) %> {
         use super::super::*;
         use actix_web::test;
+
+        /*
+        pub mod client {
+            use super::*;
+            pub struct Client<T> where T: types::<%= service.Name %> + std::clone::Clone {
+                svc: T,
+            }
+
+            impl<T> Client<T> where T: types::<%= service.Name %> + std::clone::Clone + 'static {
+                pub fn new(svc: T) -> Self {
+                    let mut app = test::init_service(actix_web::App::new()
+                        .data(svc.clone())
+                        .configure(super::super::super::<%= underscore(service.Name) %>::routes::<T>)
+                    );
+                    Client{ svc }
+                }
+            }
+
+            <%= for (embedded) in service.Embedded { %>
+            #[async_trait]
+            impl<T> types::<%= embedded.Name %> for Client<T> where T: types::<%= service.Name %> + std::clone::Clone {
+                <%= for (method) in embedded.Unique { %>
+                    async fn <%= underscore(method.Name) %>(&self, req: types::<%= method.InputObject.TypeName %>) -> Result<types::<%= method.OutputObject.TypeName %>, String> {
+                        let endpoint = "/oto/<%= service.Name %>.<%= method.Name %>";
+                        let body = types::<%= method.InputObject.TypeName %>::new();
+                        let req = test::TestRequest::post()
+                            .uri(endpoint)
+                            .set_json(&body)
+                            .to_request();
+                        let resp = test::call_service(&mut app, req).await;
+                        Err(String::new())
+                    }
+                <% } %>
+            }
+            <% } %>
+
+            #[async_trait]
+            impl<T> types::<%= service.Name %> for Client<T> where T: types::<%= service.Name %> + std::clone::Clone {
+                <%= for (method) in service.Unique { %>
+                    async fn <%= underscore(method.Name) %>(&self, req: types::<%= method.InputObject.TypeName %>) -> Result<types::<%= method.OutputObject.TypeName %>, String> {
+                        Err(String::new())
+                    }
+                <% } %>
+            }
+        }*/
 
         async fn index() -> impl actix_web::Responder {
             String::from("Hello, world!")

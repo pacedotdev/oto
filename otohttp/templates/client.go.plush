@@ -17,12 +17,16 @@ import (
 
 <%= for (service) in def.Services { %>
 type <%= camelize_down(service.Name) %>Client struct {
+	username string
+	password string
 	endpoint string
 	cl      *http.Client
 }
 
-func New<%= service.Name %>Client(endpoint string, timeout time.Duration) <%= service.Name %> {
+func New<%= service.Name %>Client(endpoint, username, password string, timeout time.Duration) <%= service.Name %> {
 	return &<%= camelize_down(service.Name) %>Client{
+		username: username,
+		password: password,
 		endpoint: endpoint,
 		cl: &http.Client{Timeout: timeout},
 	}
@@ -42,6 +46,10 @@ func (c *<%= camelize_down(service.Name) %>Client) <%= method.Name %>(ctx contex
 	if err != nil {
 		return nil, errors.Wrap(err, "request")
 	}
+	if c.username != "" {
+		request.SetBasicAuth(c.username, c.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
 	resp, err := c.cl.Do(request)
 	if err != nil {
 		return nil, errors.Wrap(err, "http")

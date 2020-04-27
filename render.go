@@ -83,6 +83,8 @@ func rustDefault(s string) template.HTML {
 			keyType := rustType(s[4 : 4+strings.Index(s[4:], "]")])
 			valueType := rustType(s[5+len(keyType):])
 			return template.HTML(fmt.Sprintf("std::collections::HashMap::<%s, %s>::new()", keyType, valueType))
+		} else if strings.HasPrefix(s, "[]") {
+			return template.HTML(fmt.Sprintf("std::Vec::new()"))
 		}
 		return template.HTML("Default::default()")
 	}
