@@ -73,7 +73,7 @@ func rustDefault(s string) template.HTML {
 	case "uint32":
 		fallthrough
 	case "uint64":
-		return "0"
+		return "std::default::Default::default()"
 	case "float32":
 		fallthrough
 	case "float64":
