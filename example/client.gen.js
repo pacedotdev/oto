@@ -3,7 +3,7 @@
 'use strict';
 
  
-export class GreeterService {
+class GreeterService {
 	
 	async greet(greetRequest) {
 		const headers = {

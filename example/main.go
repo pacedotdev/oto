@@ -1,8 +1,7 @@
 package main
 
 import (
-	"example/api"
-	"example/generated"
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,14 +9,24 @@ import (
 	"github.com/pacedotdev/oto/otohttp"
 )
 
+//go:generate ./generate.sh
+
+// greeterService implements the generated GreeterService interface.
+type greeterService struct{}
+
+func (greeterService) Greet(ctx context.Context, r GreetRequest) (*GreetResponse, error) {
+	resp := &GreetResponse{
+		Greeting: fmt.Sprintf("Hello, %s.", r.Name),
+	}
+	return resp, nil
+}
+
 func main() {
-	g := api.GreeterService{}
+	var greeterService greeterService
 	server := otohttp.NewServer()
-	generated.RegisterGreeterService(server, g)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "index.html")
-	})
+	RegisterGreeterService(server, greeterService)
 	http.Handle("/oto/", server)
+	http.Handle("/", http.FileServer(http.Dir(".")))
 	fmt.Println("listening at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

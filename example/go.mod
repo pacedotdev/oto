@@ -1,7 +1,5 @@
-module example
+module github.com/pacedotdev/oto/example2
 
 go 1.14
-
-replace api => ./api
 
 require github.com/pacedotdev/oto/otohttp v0.3.0
