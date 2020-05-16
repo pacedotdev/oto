@@ -1,13 +1,13 @@
 package definitions
 
 type GreeterService interface {
-  Greet(GreetRequest) GreetResponse
+	Greet(GreetRequest) GreetResponse
 }
 
 type GreetRequest struct {
-  Name string
+	Name string
 }
 
 type GreetResponse struct {
-  Greeting string
+	Greeting string
 }
