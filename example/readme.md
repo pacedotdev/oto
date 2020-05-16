@@ -1,6 +1,6 @@
-# exampple
+# Example
 
-structure
+This is an example project with a Go backend and a JavaScript front-end.
 
 ```
 ├── api
