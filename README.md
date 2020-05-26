@@ -63,8 +63,8 @@ oto -template ./templates/client.js.plush \
 Implement the service in Go:
 
 ```go
-// api/api.go
-package api
+// greeter_service.go
+package main
 
 type GreeterService struct{}
 
@@ -80,11 +80,10 @@ Use the generated Go code to write a `main.go` that exposes the server:
 
 ```go
 // main.go
-
 package main
 
 func main() {
-  g := api.GreeterService{}
+  g := GreeterService{}
   server := otohttp.NewServer()
   generated.RegisterGreeterService(server, g)
   http.Handle("/oto/", server)
@@ -95,7 +94,6 @@ func main() {
 Use the generated client to access the service in JavaScript:
 
 ```javascript
-// generated/oto.gen.js
 import { GreeterService } from "oto.gen.js";
 
 const greeterService = new GreeterService();
