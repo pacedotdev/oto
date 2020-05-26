@@ -120,4 +120,4 @@ oto \
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
 
-![A PACE. project](pace-footer.png)
+![A PACE. project](pace-footer.png | width=886)
