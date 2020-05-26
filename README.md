@@ -22,24 +22,24 @@ Create a project folder, and write your service definition as a Go interface:
 package definitions
 
 type GreeterService interface {
-  Greet(GreetRequest) GreetResponse
+	Greet(GreetRequest) GreetResponse
 }
 
 type GreetRequest struct {
-  Name string
+	Name string
 }
 
 type GreetResponse struct {
-  Greeting string
+	Greeting string
 }
 ```
 
 Download templates from otohttp
 
-```
+```bash
 mkdir templates \
-  && wget https://raw.githubusercontent.com/pacedotdev/oto/master/otohttp/templates/server.go.plush  -q -O ./templates/server.go.plush \
-  && wget https://raw.githubusercontent.com/pacedotdev/oto/master/otohttp/templates/client.js.plush  -q -O ./templates/client.js.plush
+	&& wget https://raw.githubusercontent.com/pacedotdev/oto/master/otohttp/templates/server.go.plush -q -O ./templates/server.go.plush \
+	&& wget https://raw.githubusercontent.com/pacedotdev/oto/master/otohttp/templates/client.js.plush -q -O ./templates/client.js.plush
 ```
 
 Use the `oto` tool to generate a client and server:
@@ -47,15 +47,15 @@ Use the `oto` tool to generate a client and server:
 ```bash
 mkdir generated &&
 oto -template ./templates/server.go.plush \
-  -out ./generated/oto.gen.go \
-  -ignore Ignorer \
-  -pkg generated
-  ./definitions/definitions.go &&
+	-out ./generated/oto.gen.go \
+	-ignore Ignorer \
+	-pkg generated
+	./definitions/definitions.go &&
 gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go &&
 oto -template ./templates/client.js.plush \
-  -out ./generated/oto.gen.js \
-  -ignore Ignorer \
-  ./definitions/definitions.go
+	-out ./generated/oto.gen.js \
+	-ignore Ignorer \
+	./definitions/definitions.go
 ```
 
 - Run `oto -help` for more information about these flags
@@ -69,10 +69,10 @@ package main
 type GreeterService struct{}
 
 func (GreeterService) Greet(ctx context.Context, r GreetRequest) (*GreetResponse, error) {
-  resp := &GreetResponse{
-    Greeting: "Hello " + r.Name,
-  }
-  return resp, nil
+	resp := &GreetResponse{
+		Greeting: "Hello " + r.Name,
+	}
+	return resp, nil
 }
 ```
 
@@ -83,11 +83,11 @@ Use the generated Go code to write a `main.go` that exposes the server:
 package main
 
 func main() {
-  g := GreeterService{}
-  server := otohttp.NewServer()
-  generated.RegisterGreeterService(server, g)
-  http.Handle("/oto/", server)
-  log.Fatal(http.ListenAndServe(":8080", nil))
+	g := GreeterService{}
+	server := otohttp.NewServer()
+	generated.RegisterGreeterService(server, g)
+	http.Handle("/oto/", server)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
 
@@ -99,11 +99,11 @@ import { GreeterService } from "oto.gen.js";
 const greeterService = new GreeterService();
 
 greeterService
-  .greet({
-    name: "Mat"
-  })
-  .then(response => alert(response.greeting))
-  .catch(e => alert(e));
+	.greet({
+	name: "Mat"
+	})
+	.then(response => alert(response.greeting))
+	.catch(e => alert(e));
 ```
 
 ### Specifying additional template data
@@ -112,10 +112,10 @@ You can provide strings to your templates via the `-params` flag:
 
 ```bash
 oto \
-  -template ./templates/server.go.plush \
-  -out ./generated/oto.gen.go \
-  -params "key1:value1,key2:value2" \
-  ./definitions/definitions.go
+	-template ./templates/server.go.plush \
+	-out ./generated/oto.gen.go \
+	-params "key1:value1,key2:value2" \
+	./definitions/definitions.go
 ```
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
