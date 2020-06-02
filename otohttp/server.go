@@ -72,7 +72,7 @@ func Encode(w http.ResponseWriter, r *http.Request, status int, v interface{}) e
 		out = gzw
 		defer gzw.Close()
 	}
-	w.Header().Set("Content-Type", "application/json; chatset=utf-8")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(status)
 	if _, err := out.Write(b); err != nil {
 		return err
