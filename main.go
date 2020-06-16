@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"go/format"
 	"io"
 	"io/ioutil"
 	"os"
@@ -78,6 +79,15 @@ flags:`)
 		}
 		defer f.Close()
 		w = f
+
+		// Apply gofmt to .go files
+		if strings.HasSuffix(*outfile, ".go") {
+			outb, err := format.Source([]byte(out))
+			if err != nil {
+				return err
+			}
+			out = string(outb)
+		}
 	}
 	if _, err := io.WriteString(w, out); err != nil {
 		return err
