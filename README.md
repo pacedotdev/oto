@@ -51,7 +51,6 @@ oto -template ./templates/server.go.plush \
     -ignore Ignorer \
     -pkg generated \
     ./definitions/definitions.go &&
-gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go &&
 oto -template ./templates/client.js.plush \
     -out ./generated/oto.gen.js \
     -ignore Ignorer \
