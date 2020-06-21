@@ -100,7 +100,7 @@ const greeterService = new GreeterService();
 
 greeterService
     .greet({
-    name: "Mat"
+        name: "Mat"
     })
     .then(response => alert(response.greeting))
     .catch(e => alert(e));
