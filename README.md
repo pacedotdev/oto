@@ -49,7 +49,7 @@ mkdir generated &&
 oto -template ./templates/server.go.plush \
     -out ./generated/oto.gen.go \
     -ignore Ignorer \
-    -pkg generated
+    -pkg generated \
     ./definitions/definitions.go &&
 gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go &&
 oto -template ./templates/client.js.plush \
