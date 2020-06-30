@@ -1,6 +1,9 @@
 package main
 
 import (
+	"html/template"
+
+	"github.com/fatih/structtag"
 	"github.com/gobuffalo/plush"
 	"github.com/markbates/inflect"
 )
@@ -13,6 +16,8 @@ func render(template string, def definition, params map[string]interface{}) (str
 	ctx.Set("camelize_down", camelizeDown)
 	ctx.Set("def", def)
 	ctx.Set("params", params)
+	ctx.Set("struct_tag", structTag)
+	ctx.Set("struct_tag2", structTag2)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -30,4 +35,39 @@ func camelizeDown(s string) string {
 		// as expected in this case.
 	}
 	return defaultRuleset.CamelizeDownFirst(s)
+}
+
+func backticks(s string) string {
+	return "`" + s + "`"
+}
+
+var emptyHTML = template.HTML("")
+
+func structTag(tag string) template.HTML {
+	return structTag2(tag, "")
+}
+
+func structTag2(tagstr string, additional string) template.HTML {
+	if tagstr != "" && additional != "" {
+		tags, err := structtag.Parse(tagstr)
+		if err != nil {
+			return emptyHTML
+		}
+
+		add, err := structtag.Parse(additional)
+		if err != nil {
+			return template.HTML(backticks(tags.String()))
+		}
+
+		for _, item := range add.Tags() {
+			tags.Set(item)
+		}
+		return template.HTML(backticks(tags.String()))
+	} else if tagstr != "" {
+		return template.HTML(backticks(tagstr))
+	} else if additional != "" {
+		return template.HTML(backticks(additional))
+	}
+
+	return emptyHTML
 }

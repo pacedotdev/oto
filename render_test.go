@@ -40,3 +40,18 @@ func TestCamelizeDown(t *testing.T) {
 		}
 	}
 }
+
+func TestStructTag2(t *testing.T) {
+	for expected, in := range map[string][]string{
+		"":                            {"", ""},
+		"`db:\"name\" json:\"name\"`": {`db:"name" json:"name"`, ""},
+		"`db:\"name\" json:\"foo\" fruit:\"apple\"`": {`db:"name" json:"name"`, `json:"foo" fruit:"apple"`},
+		"`json:\"foo\"`": {"", `json:"foo"`},
+	} {
+		actual := string(structTag2(in[0], in[1]))
+
+		if actual != expected {
+			t.Errorf("%s expected: %q but got %q", in, expected, actual)
+		}
+	}
+}

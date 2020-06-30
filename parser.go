@@ -53,6 +53,7 @@ type field struct {
 	Name      string    `json:"name,omitempty"`
 	Type      fieldType `json:"type,omitempty"`
 	OmitEmpty bool      `json:"omitEmpty,omitempty"`
+	Tag       string    `json:"tag"`
 }
 
 type fieldType struct {
@@ -233,6 +234,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 		if err != nil {
 			return err
 		}
+		field.Tag = v.Tag(i)
 		obj.Fields = append(obj.Fields, field)
 	}
 	p.def.Objects = append(p.def.Objects, obj)
@@ -242,6 +244,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 
 func (p *parser) parseField(pkg *packages.Package, v *types.Var) (field, error) {
 	var f field
+
 	f.Name = v.Name()
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
