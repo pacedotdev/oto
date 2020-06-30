@@ -92,7 +92,6 @@ flags:`)
 		fmt.Printf("\tTotal Methods: %d", methodsCount)
 		fmt.Printf("\tTotal Objects: %d\n", len(def.Objects))
 		fmt.Printf("\tOutput size: %s\n", humanize.Bytes(uint64(len(out))))
-
 	}
 	return nil
 }
