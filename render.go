@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"html/template"
+
 	"github.com/gobuffalo/plush"
 	"github.com/markbates/inflect"
 )
@@ -13,11 +16,20 @@ func render(template string, def definition, params map[string]interface{}) (str
 	ctx.Set("camelize_down", camelizeDown)
 	ctx.Set("def", def)
 	ctx.Set("params", params)
+	ctx.Set("json", toJSONHelper)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
 	}
 	return s, nil
+}
+
+func toJSONHelper(v interface{}) (template.HTML, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	return template.HTML(b), nil
 }
 
 // camelizeDown converts a name or other string into a camel case
