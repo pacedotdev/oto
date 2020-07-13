@@ -9,7 +9,7 @@ import (
 
 func TestRender(t *testing.T) {
 	is := is.New(t)
-	def := definition{
+	def := Definition{
 		PackageName: "services",
 	}
 	params := map[string]interface{}{

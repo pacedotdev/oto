@@ -12,7 +12,7 @@ import (
 
 var errNotFound = errors.New("not found")
 
-type definition struct {
+type Definition struct {
 	PackageName string            `json:"packageName,omitempty"`
 	Services    []Service         `json:"services,omitempty"`
 	Objects     []Object          `json:"objects,omitempty"`
@@ -21,7 +21,7 @@ type definition struct {
 
 // Object looks up an object by name. Returns errNotFound error
 // if it cannot find it.
-func (d *definition) Object(name string) (*Object, error) {
+func (d *Definition) Object(name string) (*Object, error) {
 	for i := range d.Objects {
 		obj := &d.Objects[i]
 		if obj.Name == name {
@@ -90,7 +90,7 @@ type parser struct {
 	ExcludeInterfaces []string
 
 	patterns []string
-	def      definition
+	def      Definition
 
 	// outputObjects marks output object names.
 	outputObjects map[string]struct{}
@@ -107,7 +107,7 @@ func newParser(patterns ...string) *parser {
 	}
 }
 
-func (p *parser) parse() (definition, error) {
+func (p *parser) parse() (Definition, error) {
 	cfg := &packages.Config{
 		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName,
 		Tests: false,
@@ -211,7 +211,7 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	return m, nil
 }
 
-// parseObject parses a struct type and adds it to the definition.
+// parseObject parses a struct type and adds it to the Definition.
 func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
 	var obj Object
 	obj.Name = o.Name()
