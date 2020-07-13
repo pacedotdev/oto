@@ -14,14 +14,14 @@ var errNotFound = errors.New("not found")
 
 type definition struct {
 	PackageName string            `json:"packageName,omitempty"`
-	Services    []service         `json:"services,omitempty"`
-	Objects     []object          `json:"objects,omitempty"`
+	Services    []Service         `json:"services,omitempty"`
+	Objects     []Object          `json:"objects,omitempty"`
 	Imports     map[string]string `json:"imports,omitempty"`
 }
 
 // Object looks up an object by name. Returns errNotFound error
 // if it cannot find it.
-func (d *definition) Object(name string) (*object, error) {
+func (d *definition) Object(name string) (*Object, error) {
 	for i := range d.Objects {
 		obj := &d.Objects[i]
 		if obj.Name == name {
@@ -31,31 +31,31 @@ func (d *definition) Object(name string) (*object, error) {
 	return nil, errNotFound
 }
 
-type service struct {
+type Service struct {
 	Name    string   `json:"name,omitempty"`
-	Methods []method `json:"methods,omitempty"`
+	Methods []Method `json:"methods,omitempty"`
 }
 
-type method struct {
+type Method struct {
 	Name         string    `json:"name,omitempty"`
-	InputObject  fieldType `json:"inputObject,omitempty"`
-	OutputObject fieldType `json:"outputObject,omitempty"`
+	InputObject  FieldType `json:"inputObject,omitempty"`
+	OutputObject FieldType `json:"outputObject,omitempty"`
 }
 
-type object struct {
+type Object struct {
 	TypeID   string  `json:"typeID"`
 	Name     string  `json:"name"`
 	Imported bool    `json:"imported,omitempty"`
-	Fields   []field `json:"fields,omitempty"`
+	Fields   []Field `json:"fields,omitempty"`
 }
 
-type field struct {
+type Field struct {
 	Name      string    `json:"name,omitempty"`
-	Type      fieldType `json:"type,omitempty"`
+	Type      FieldType `json:"type,omitempty"`
 	OmitEmpty bool      `json:"omitEmpty,omitempty"`
 }
 
-type fieldType struct {
+type FieldType struct {
 	TypeID   string `json:"typeID"`
 	TypeName string `json:"typeName"`
 	Multiple bool   `json:"multiple"`
@@ -63,7 +63,7 @@ type fieldType struct {
 	IsObject bool   `json:"isObject"`
 }
 
-func (f fieldType) JSType() (string, error) {
+func (f FieldType) JSType() (string, error) {
 	if f.IsObject {
 		return "object", nil
 	}
@@ -144,7 +144,7 @@ func (p *parser) parse() (definition, error) {
 		}
 	}
 	// remove any excluded objects
-	nonExcludedObjects := make([]object, 0, len(p.def.Objects))
+	nonExcludedObjects := make([]Object, 0, len(p.def.Objects))
 	for _, object := range p.def.Objects {
 		excluded := false
 		for _, excludedTypeID := range excludedObjectsTypeIDs {
@@ -168,8 +168,8 @@ func (p *parser) parse() (definition, error) {
 	return p.def, nil
 }
 
-func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (service, error) {
-	var s service
+func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (Service, error) {
+	var s Service
 	s.Name = obj.Name()
 	if p.Verbose {
 		fmt.Printf("%s ", s.Name)
@@ -186,8 +186,8 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 	return s, nil
 }
 
-func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (method, error) {
-	var m method
+func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (Method, error) {
+	var m Method
 	m.Name = methodType.Name()
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
@@ -213,7 +213,7 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 
 // parseObject parses a struct type and adds it to the definition.
 func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
-	var obj object
+	var obj Object
 	obj.Name = o.Name()
 	if _, found := p.objects[obj.Name]; found {
 		// if this has already been parsed, skip it
@@ -240,8 +240,8 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	return nil
 }
 
-func (p *parser) parseField(pkg *packages.Package, v *types.Var) (field, error) {
-	var f field
+func (p *parser) parseField(pkg *packages.Package, v *types.Var) (Field, error) {
+	var f Field
 	f.Name = v.Name()
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
@@ -254,8 +254,8 @@ func (p *parser) parseField(pkg *packages.Package, v *types.Var) (field, error) 
 	return f, nil
 }
 
-func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (fieldType, error) {
-	var ftype fieldType
+func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldType, error) {
+	var ftype FieldType
 	pkgPath := pkg.PkgPath
 	resolver := func(other *types.Package) string {
 		if other.Name() != pkg.Name {
@@ -291,10 +291,10 @@ func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (fieldT
 // addOutputFields adds built-in fields to the response objects
 // mentioned in p.outputObjects.
 func (p *parser) addOutputFields() error {
-	errorField := field{
+	errorField := Field{
 		OmitEmpty: true,
 		Name:      "Error",
-		Type: fieldType{
+		Type: FieldType{
 			TypeName: "string",
 		},
 	}

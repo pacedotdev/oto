@@ -123,18 +123,18 @@ func TestParse(t *testing.T) {
 
 func TestFieldJSType(t *testing.T) {
 	is := is.New(t)
-	for in, expected := range map[fieldType]string{
-		fieldType{TypeName: "string"}:                     "string",
-		fieldType{TypeName: "int"}:                        "number",
-		fieldType{TypeName: "uint"}:                       "number",
-		fieldType{TypeName: "uint32"}:                     "number",
-		fieldType{TypeName: "int32"}:                      "number",
-		fieldType{TypeName: "int64"}:                      "number",
-		fieldType{TypeName: "float64"}:                    "number",
-		fieldType{TypeName: "bool"}:                       "boolean",
-		fieldType{TypeName: "interface{}"}:                "any",
-		fieldType{TypeName: "map[string]interface{}"}:     "object",
-		fieldType{TypeName: "SomeObject", IsObject: true}: "object",
+	for in, expected := range map[FieldType]string{
+		FieldType{TypeName: "string"}:                     "string",
+		FieldType{TypeName: "int"}:                        "number",
+		FieldType{TypeName: "uint"}:                       "number",
+		FieldType{TypeName: "uint32"}:                     "number",
+		FieldType{TypeName: "int32"}:                      "number",
+		FieldType{TypeName: "int64"}:                      "number",
+		FieldType{TypeName: "float64"}:                    "number",
+		FieldType{TypeName: "bool"}:                       "boolean",
+		FieldType{TypeName: "interface{}"}:                "any",
+		FieldType{TypeName: "map[string]interface{}"}:     "object",
+		FieldType{TypeName: "SomeObject", IsObject: true}: "object",
 	} {
 		actual, err := in.JSType()
 		is.NoErr(err)
