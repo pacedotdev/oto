@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/token"
 	"go/types"
+	"log"
 	"sort"
 
 	"github.com/pkg/errors"
@@ -109,7 +110,7 @@ func newParser(patterns ...string) *parser {
 
 func (p *parser) parse() (Definition, error) {
 	cfg := &packages.Config{
-		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName,
+		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName | packages.NeedSyntax,
 		Tests: false,
 	}
 	p.outputObjects = make(map[string]struct{})
@@ -120,10 +121,24 @@ func (p *parser) parse() (Definition, error) {
 		return p.def, err
 	}
 	for _, pkg := range pkgs {
+
+		for _, file := range pkg.Syntax {
+			for _, commentGroup := range file.Comments {
+				log.Printf("%d-%d: %s", commentGroup.Pos(), commentGroup.End(), commentGroup.Text())
+			}
+		}
+
+		// b, err := json.MarshalIndent(f, "", "\t")
+		// if err != nil {
+		// 	return false
+		// }
+		// fmt.Println(string(b))
+
 		p.def.PackageName = pkg.Name
 		scope := pkg.Types.Scope()
 		for _, name := range scope.Names() {
 			obj := scope.Lookup(name)
+
 			switch item := obj.Type().Underlying().(type) {
 			case *types.Interface:
 				s, err := p.parseService(pkg, obj, item)

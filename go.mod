@@ -3,6 +3,7 @@ module github.com/pacedotdev/oto
 go 1.13
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gobuffalo/envy v1.7.1 // indirect
 	github.com/gobuffalo/helpers v0.4.0 // indirect
