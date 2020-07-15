@@ -18,14 +18,14 @@ var errNotFound = errors.New("not found")
 // Definition describes an Oto definition.
 type Definition struct {
 	// PackageName is the name of the package.
-	PackageName string `json:"packageName,omitempty"`
+	PackageName string `json:"packageName"`
 	// Services are the services described in this definition.
-	Services []Service `json:"services,omitempty"`
+	Services []Service `json:"services"`
 	// Objects are the structures that are used throughout this definition.
-	Objects []Object `json:"objects,omitempty"`
+	Objects []Object `json:"objects"`
 	// Imports is a map of Go imports that should be imported into
 	// Go code.
-	Imports map[string]string `json:"imports,omitempty"`
+	Imports map[string]string `json:"imports"`
 }
 
 // Object looks up an object by name. Returns errNotFound error
@@ -42,34 +42,34 @@ func (d *Definition) Object(name string) (*Object, error) {
 
 // Service describes a service, akin to an interface in Go.
 type Service struct {
-	Name    string   `json:"name,omitempty"`
-	Methods []Method `json:"methods,omitempty"`
-	Comment string   `json:"comment,omitempty"`
+	Name    string   `json:"name"`
+	Methods []Method `json:"methods"`
+	Comment string   `json:"comment"`
 }
 
 // Method describes a method that a Service can perform.
 type Method struct {
-	Name         string    `json:"name,omitempty"`
-	InputObject  FieldType `json:"inputObject,omitempty"`
-	OutputObject FieldType `json:"outputObject,omitempty"`
-	Comment      string    `json:"comment,omitempty"`
+	Name         string    `json:"name"`
+	InputObject  FieldType `json:"inputObject"`
+	OutputObject FieldType `json:"outputObject"`
+	Comment      string    `json:"comment"`
 }
 
 // Object describes a data structure that is part of this definition.
 type Object struct {
 	TypeID   string  `json:"typeID"`
 	Name     string  `json:"name"`
-	Imported bool    `json:"imported,omitempty"`
-	Fields   []Field `json:"fields,omitempty"`
-	Comment  string  `json:"comment,omitempty"`
+	Imported bool    `json:"imported"`
+	Fields   []Field `json:"fields"`
+	Comment  string  `json:"comment"`
 }
 
 // Field describes the field inside an Object.
 type Field struct {
-	Name      string    `json:"name,omitempty"`
-	Type      FieldType `json:"type,omitempty"`
-	OmitEmpty bool      `json:"omitEmpty,omitempty"`
-	Comment   string    `json:"comment,omitempty"`
+	Name      string    `json:"name"`
+	Type      FieldType `json:"type"`
+	OmitEmpty bool      `json:"omitEmpty"`
+	Comment   string    `json:"comment"`
 }
 
 // FieldType holds information about the type of data that this
