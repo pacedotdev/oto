@@ -17,8 +17,11 @@ func TestParse(t *testing.T) {
 	is.Equal(def.PackageName, "pleasantries")
 	is.Equal(len(def.Services), 2) // should be 2 services
 	is.Equal(def.Services[0].Name, "GreeterService")
+	is.Equal(def.Services[0].Comment, `GreeterService is a polite API.
+You will love it.`)
 	is.Equal(len(def.Services[0].Methods), 2)
 	is.Equal(def.Services[0].Methods[0].Name, "GetGreetings")
+	is.Equal(def.Services[0].Methods[0].Comment, "GetGreetings gets a range of saved Greetings.")
 	is.Equal(def.Services[0].Methods[0].InputObject.TypeName, "GetGreetingsRequest")
 	is.Equal(def.Services[0].Methods[0].InputObject.Multiple, false)
 	is.Equal(def.Services[0].Methods[0].InputObject.Package, "")
@@ -27,6 +30,7 @@ func TestParse(t *testing.T) {
 	is.Equal(def.Services[0].Methods[0].OutputObject.Package, "")
 
 	is.Equal(def.Services[0].Methods[1].Name, "Greet")
+	is.Equal(def.Services[0].Methods[1].Comment, "Greet creates a Greeting for one or more people.")
 	is.Equal(def.Services[0].Methods[1].InputObject.TypeName, "GreetRequest")
 	is.Equal(def.Services[0].Methods[1].InputObject.Multiple, false)
 	is.Equal(def.Services[0].Methods[1].InputObject.Package, "")
@@ -37,8 +41,10 @@ func TestParse(t *testing.T) {
 	greetInputObject, err := def.Object(def.Services[0].Methods[0].InputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(greetInputObject.Name, "GetGreetingsRequest")
+	is.Equal(greetInputObject.Comment, "GetGreetingsRequest is the request object for GreeterService.GetGreetings.")
 	is.Equal(len(greetInputObject.Fields), 1)
 	is.Equal(greetInputObject.Fields[0].Name, "Page")
+	is.Equal(greetInputObject.Fields[0].Comment, "Page describes which page of data to get.")
 	is.Equal(greetInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetInputObject.Fields[0].Type.TypeName, "services.Page")
 	is.Equal(greetInputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/testdata/services.Page")
