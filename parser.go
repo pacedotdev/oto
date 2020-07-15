@@ -17,10 +17,15 @@ var errNotFound = errors.New("not found")
 
 // Definition describes an Oto definition.
 type Definition struct {
-	PackageName string            `json:"packageName,omitempty"`
-	Services    []Service         `json:"services,omitempty"`
-	Objects     []Object          `json:"objects,omitempty"`
-	Imports     map[string]string `json:"imports,omitempty"`
+	// PackageName is the name of the package.
+	PackageName string `json:"packageName,omitempty"`
+	// Services are the services described in this definition.
+	Services []Service `json:"services,omitempty"`
+	// Objects are the structures that are used throughout this definition.
+	Objects []Object `json:"objects,omitempty"`
+	// Imports is a map of Go imports that should be imported into
+	// Go code.
+	Imports map[string]string `json:"imports,omitempty"`
 }
 
 // Object looks up an object by name. Returns errNotFound error
