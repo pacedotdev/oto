@@ -1,5 +1,8 @@
-github.com/pacedotdev/oto v0.3.0 h1:ZtwT3ImKVan6mzXo8q1Tdyu7RzpB2DAhDzYjHQA+HeE=
-github.com/pacedotdev/oto/otohttp v0.3.0 h1:ZbykCnQ4JYaei8COdd42gQAvlhtZxnQqpptPx7Ncl+Y=
-github.com/pacedotdev/oto/otohttp v0.3.0/go.mod h1:e03n82JQJNrKE3qQdPCwPkgFi3Ss7Us6ij2Jc0RHa0w=
+github.com/matryer/is v1.4.0 h1:sosSmIWwkYITGrxZ25ULNDeKiMNzFSr4V/eqBQP0PeE=
+github.com/matryer/is v1.4.0/go.mod h1:8I/i5uYgLzgsgEloJE1U6xx5HkBQpAZvepWuujKwMRU=
+github.com/pacedotdev/oto/otohttp v0.4.1 h1:tIkVdqUbuRbL910Ism/RybvfPTlbwphUifTn0v8OgUs=
+github.com/pacedotdev/oto/otohttp v0.4.1/go.mod h1:q4aoy0cXmEt8FzXXvwJ+Gr21OxAestUIj9fTnb6znDs=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
