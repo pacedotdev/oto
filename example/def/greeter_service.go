@@ -12,6 +12,7 @@ type GreetRequest struct {
 	Name string
 }
 
+// GreetResponse is the response object for GreeterService.Greet.
 type GreetResponse struct {
 	// Greeting is a nice message welcoming somebody.
 	Greeting string

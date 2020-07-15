@@ -14,7 +14,7 @@ import (
 )
 
 <%= for (service) in def.Services { %>
-type <%= service.Name %> interface {
+<%= format_comment_text(service.Comment) %>type <%= service.Name %> interface {
 <%= for (method) in service.Methods { %>
 	<%= method.Name %>(context.Context, <%= method.InputObject.TypeName %>) (*<%= method.OutputObject.TypeName %>, error)<% } %>
 }
@@ -26,6 +26,7 @@ type <%= camelize_down(service.Name) %>Server struct {
 	<%= camelize_down(service.Name) %> <%= service.Name %>
 }
 
+// Register adds the <%= service.Name %> to the otohttp.Server.
 func Register<%= service.Name %>(server *otohttp.Server, <%= camelize_down(service.Name) %> <%= service.Name %>) {
 	handler := &<%= camelize_down(service.Name) %>Server{
 		server: server,
@@ -55,8 +56,8 @@ func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w ht
 <% } %>
 
 <%= for (object) in def.Objects { %>
-type <%= object.Name %> struct {
-	<%= for (field) in object.Fields { %><%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %> `json:"<%= camelize_down(field.Name) %><%= if (field.OmitEmpty) { %>,omitempty<% } %>"`
+<%= format_comment_text(object.Comment) %>type <%= object.Name %> struct {
+	<%= for (field) in object.Fields { %><%= format_comment_text(field.Comment) %><%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %> `json:"<%= camelize_down(field.Name) %><%= if (field.OmitEmpty) { %>,omitempty<% } %>"`
 <% } %>
 }
 <% } %>

@@ -21,15 +21,21 @@ Create a project folder, and write your service definition as a Go interface:
 // definitions/definitons.go
 package definitions
 
+// GreeterService makes nice greetings.
 type GreeterService interface {
+    // Greet makes a greeting.
     Greet(GreetRequest) GreetResponse
 }
 
+// GreetRequest is the request object for GreeterService.Greet.
 type GreetRequest struct {
+    // Name is the person to greet.
     Name string
 }
 
+// GreetResponse is the response object for GreeterService.Greet.
 type GreetResponse struct {
+    // Greeting is the greeting that was generated.
     Greeting string
 }
 ```
@@ -45,17 +51,17 @@ mkdir templates \
 Use the `oto` tool to generate a client and server:
 
 ```bash
-mkdir generated &&
+mkdir generated
 oto -template ./templates/server.go.plush \
     -out ./generated/oto.gen.go \
     -ignore Ignorer \
     -pkg generated \
-    ./definitions/definitions.go &&
-gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go &&
+    ./path/to/definition
+gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go
 oto -template ./templates/client.js.plush \
     -out ./generated/oto.gen.js \
     -ignore Ignorer \
-    ./definitions/definitions.go
+    ./path/to/definition
 ```
 
 - Run `oto -help` for more information about these flags
@@ -115,7 +121,7 @@ oto \
     -template ./templates/server.go.plush \
     -out ./generated/oto.gen.go \
     -params "key1:value1,key2:value2" \
-    ./definitions/definitions.go
+    ./path/to/definition
 ```
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
