@@ -12,6 +12,7 @@ import (
 
 var errNotFound = errors.New("not found")
 
+// Definition describes an Oto definition.
 type Definition struct {
 	PackageName string            `json:"packageName,omitempty"`
 	Services    []Service         `json:"services,omitempty"`
@@ -31,17 +32,20 @@ func (d *Definition) Object(name string) (*Object, error) {
 	return nil, errNotFound
 }
 
+// Service describes a service, akin to an interface in Go.
 type Service struct {
 	Name    string   `json:"name,omitempty"`
 	Methods []Method `json:"methods,omitempty"`
 }
 
+// Method describes a method that a Service can perform.
 type Method struct {
 	Name         string    `json:"name,omitempty"`
 	InputObject  FieldType `json:"inputObject,omitempty"`
 	OutputObject FieldType `json:"outputObject,omitempty"`
 }
 
+// Object describes a data structure that is part of this definition.
 type Object struct {
 	TypeID   string  `json:"typeID"`
 	Name     string  `json:"name"`
@@ -49,12 +53,15 @@ type Object struct {
 	Fields   []Field `json:"fields,omitempty"`
 }
 
+// Field describes the field inside an Object.
 type Field struct {
 	Name      string    `json:"name,omitempty"`
 	Type      FieldType `json:"type,omitempty"`
 	OmitEmpty bool      `json:"omitEmpty,omitempty"`
 }
 
+// FieldType holds information about the type of data that this
+// Field stores.
 type FieldType struct {
 	TypeID   string `json:"typeID"`
 	TypeName string `json:"typeName"`
@@ -63,6 +70,7 @@ type FieldType struct {
 	IsObject bool   `json:"isObject"`
 }
 
+// JSType gets the JavaScript type for this FieldType.
 func (f FieldType) JSType() (string, error) {
 	if f.IsObject {
 		return "object", nil
