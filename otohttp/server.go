@@ -14,6 +14,10 @@ import (
 
 // Server handles oto requests.
 type Server struct {
+	// Basepath is the path prefix to match.
+	// Default: /oto/
+	Basepath string
+
 	routes map[string]http.Handler
 	// NotFound is the http.Handler to use when a resource is
 	// not found.
@@ -25,7 +29,8 @@ type Server struct {
 // NewServer makes a new Server.
 func NewServer() *Server {
 	return &Server{
-		routes: make(map[string]http.Handler),
+		Basepath: "/oto/",
+		routes:   make(map[string]http.Handler),
 		OnErr: func(w http.ResponseWriter, r *http.Request, err error) {
 			errObj := struct {
 				Error string `json:"error"`
@@ -42,7 +47,7 @@ func NewServer() *Server {
 
 // Register adds a handler for the specified service method.
 func (s *Server) Register(service, method string, h http.HandlerFunc) {
-	s.routes[fmt.Sprintf("/oto/%s.%s", service, method)] = h
+	s.routes[fmt.Sprintf("%s%s.%s", s.Basepath, service, method)] = h
 }
 
 // ServeHTTP serves the request.

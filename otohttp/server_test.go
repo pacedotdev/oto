@@ -23,6 +23,21 @@ func TestServer(t *testing.T) {
 	is.Equal(w.Body.String(), `{"greeting":"Hi Mat"}`)
 }
 
+func TestServerBasepath(t *testing.T) {
+	is := is.New(t)
+	srv := NewServer()
+	srv.Basepath = "/api/"
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"greeting":"Hi Mat"}`))
+	})
+	srv.Register("Service", "Method", h)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/api/Service.Method", strings.NewReader(`{"name":"Mat"}`))
+	srv.ServeHTTP(w, r)
+	is.Equal(w.Code, http.StatusOK)
+	is.Equal(w.Body.String(), `{"greeting":"Hi Mat"}`)
+}
+
 func TestEncode(t *testing.T) {
 	is := is.New(t)
 	data := struct {
