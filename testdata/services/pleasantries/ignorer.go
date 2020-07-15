@@ -1,5 +1,6 @@
 package pleasantries
 
+// Ignorer gets ignored by the tooling.
 type Ignorer interface {
 	Ignore(IgnoreRequest) IgnoreResponse
 }

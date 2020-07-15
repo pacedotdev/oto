@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"go/ast"
+	"go/doc"
 	"go/token"
 	"go/types"
-	"log"
 	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
@@ -37,6 +39,7 @@ func (d *Definition) Object(name string) (*Object, error) {
 type Service struct {
 	Name    string   `json:"name,omitempty"`
 	Methods []Method `json:"methods,omitempty"`
+	Comment string   `json:"comment,omitempty"`
 }
 
 // Method describes a method that a Service can perform.
@@ -44,6 +47,7 @@ type Method struct {
 	Name         string    `json:"name,omitempty"`
 	InputObject  FieldType `json:"inputObject,omitempty"`
 	OutputObject FieldType `json:"outputObject,omitempty"`
+	Comment      string    `json:"comment,omitempty"`
 }
 
 // Object describes a data structure that is part of this definition.
@@ -52,6 +56,7 @@ type Object struct {
 	Name     string  `json:"name"`
 	Imported bool    `json:"imported,omitempty"`
 	Fields   []Field `json:"fields,omitempty"`
+	Comment  string  `json:"comment,omitempty"`
 }
 
 // Field describes the field inside an Object.
@@ -59,6 +64,7 @@ type Field struct {
 	Name      string    `json:"name,omitempty"`
 	Type      FieldType `json:"type,omitempty"`
 	OmitEmpty bool      `json:"omitEmpty,omitempty"`
+	Comment   string    `json:"comment,omitempty"`
 }
 
 // FieldType holds information about the type of data that this
@@ -105,6 +111,9 @@ type parser struct {
 	outputObjects map[string]struct{}
 	// objects marks object names.
 	objects map[string]struct{}
+
+	// docs are the docs for extracting comments.
+	docs *doc.Package
 }
 
 // newParser makes a fresh parser using the specified patterns.
@@ -121,32 +130,23 @@ func (p *parser) parse() (Definition, error) {
 		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName | packages.NeedSyntax,
 		Tests: false,
 	}
-	p.outputObjects = make(map[string]struct{})
-	p.objects = make(map[string]struct{})
-	var excludedObjectsTypeIDs []string
 	pkgs, err := packages.Load(cfg, p.patterns...)
 	if err != nil {
 		return p.def, err
 	}
+	p.outputObjects = make(map[string]struct{})
+	p.objects = make(map[string]struct{})
+	var excludedObjectsTypeIDs []string
 	for _, pkg := range pkgs {
-
-		for _, file := range pkg.Syntax {
-			for _, commentGroup := range file.Comments {
-				log.Printf("%d-%d: %s", commentGroup.Pos(), commentGroup.End(), commentGroup.Text())
-			}
+		p.docs, err = doc.NewFromFiles(pkg.Fset, pkg.Syntax, "")
+		if err != nil {
+			panic(err)
 		}
-
-		// b, err := json.MarshalIndent(f, "", "\t")
-		// if err != nil {
-		// 	return false
-		// }
-		// fmt.Println(string(b))
 
 		p.def.PackageName = pkg.Name
 		scope := pkg.Types.Scope()
 		for _, name := range scope.Names() {
 			obj := scope.Lookup(name)
-
 			switch item := obj.Type().Underlying().(type) {
 			case *types.Interface:
 				s, err := p.parseService(pkg, obj, item)
@@ -194,6 +194,7 @@ func (p *parser) parse() (Definition, error) {
 func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (Service, error) {
 	var s Service
 	s.Name = obj.Name()
+	s.Comment = p.commentForType(s.Name)
 	if p.Verbose {
 		fmt.Printf("%s ", s.Name)
 	}
@@ -212,6 +213,7 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (Method, error) {
 	var m Method
 	m.Name = methodType.Name()
+	m.Comment = p.commentForMethod(serviceName, m.Name)
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
 	if inputParams.Len() != 1 {
@@ -238,6 +240,7 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
 	var obj Object
 	obj.Name = o.Name()
+	obj.Comment = p.commentForType(obj.Name)
 	if _, found := p.objects[obj.Name]; found {
 		// if this has already been parsed, skip it
 		return nil
@@ -252,7 +255,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	}
 	obj.TypeID = o.Pkg().Path() + "." + obj.Name
 	for i := 0; i < st.NumFields(); i++ {
-		field, err := p.parseField(pkg, st.Field(i))
+		field, err := p.parseField(pkg, obj.Name, st.Field(i))
 		if err != nil {
 			return err
 		}
@@ -263,9 +266,10 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	return nil
 }
 
-func (p *parser) parseField(pkg *packages.Package, v *types.Var) (Field, error) {
+func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
 	var f Field
 	f.Name = v.Name()
+	f.Comment = p.commentForField(objectName, f.Name)
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
@@ -344,4 +348,83 @@ func isInSlice(slice []string, s string) bool {
 		}
 	}
 	return false
+}
+
+func (p *parser) lookupType(name string) *doc.Type {
+	for i := range p.docs.Types {
+		if p.docs.Types[i].Name == name {
+			return p.docs.Types[i]
+		}
+	}
+	return nil
+}
+
+func (p *parser) commentForType(name string) string {
+	typ := p.lookupType(name)
+	if typ == nil {
+		return ""
+	}
+	return cleanComment(typ.Doc)
+}
+
+func (p *parser) commentForMethod(service, method string) string {
+	typ := p.lookupType(service)
+	if typ == nil {
+		return ""
+	}
+	spec, ok := typ.Decl.Specs[0].(*ast.TypeSpec)
+	if !ok {
+		return ""
+	}
+	iface, ok := spec.Type.(*ast.InterfaceType)
+	if !ok {
+		return ""
+	}
+	var m *ast.Field
+outer:
+	for i := range iface.Methods.List {
+		for _, name := range iface.Methods.List[i].Names {
+			if name.Name == method {
+				m = iface.Methods.List[i]
+				break outer
+			}
+		}
+	}
+	if m == nil {
+		return ""
+	}
+	return cleanComment(m.Doc.Text())
+}
+
+func (p *parser) commentForField(typeName, field string) string {
+	typ := p.lookupType(typeName)
+	if typ == nil {
+		return ""
+	}
+	spec, ok := typ.Decl.Specs[0].(*ast.TypeSpec)
+	if !ok {
+		return ""
+	}
+	obj, ok := spec.Type.(*ast.StructType)
+	if !ok {
+		return ""
+	}
+	var f *ast.Field
+outer:
+	for i := range obj.Fields.List {
+		for _, name := range obj.Fields.List[i].Names {
+			if name.Name == field {
+				f = obj.Fields.List[i]
+				break outer
+			}
+		}
+	}
+	if f == nil {
+		return ""
+	}
+	return cleanComment(f.Doc.Text())
+}
+
+func cleanComment(s string) string {
+	return strings.TrimSpace(s)
 }

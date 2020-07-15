@@ -5,8 +5,10 @@ type GreeterService interface {
 	Greet(GreetRequest) GreetResponse
 }
 
+// GreetRequest is the request object for GreeterService.Greet.
 type GreetRequest struct {
 	// Name is the person to greet.
+	// It is required.
 	Name string
 }
 
