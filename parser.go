@@ -326,6 +326,7 @@ func (p *parser) addOutputFields() error {
 	errorField := Field{
 		OmitEmpty: true,
 		Name:      "Error",
+		Comment:   "Error is string explaining what went wrong. Empty if everything was fine.",
 		Type: FieldType{
 			TypeName: "string",
 		},

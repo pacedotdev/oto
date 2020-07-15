@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"go/doc"
 	"html/template"
 
 	"github.com/gobuffalo/plush"
@@ -17,6 +19,8 @@ func render(template string, def Definition, params map[string]interface{}) (str
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("json", toJSONHelper)
+	ctx.Set("format_comment_text", formatCommentText)
+	ctx.Set("format_comment_html", formatCommentHTML)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -30,6 +34,18 @@ func toJSONHelper(v interface{}) (template.HTML, error) {
 		return "", err
 	}
 	return template.HTML(b), nil
+}
+
+func formatCommentText(s string) string {
+	var buf bytes.Buffer
+	doc.ToText(&buf, s, "// ", "", 80)
+	return buf.String()
+}
+
+func formatCommentHTML(s string) string {
+	var buf bytes.Buffer
+	doc.ToHTML(&buf, s, nil)
+	return buf.String()
 }
 
 // camelizeDown converts a name or other string into a camel case
