@@ -42,10 +42,10 @@ func formatCommentText(s string) string {
 	return buf.String()
 }
 
-func formatCommentHTML(s string) string {
+func formatCommentHTML(s string) template.HTML {
 	var buf bytes.Buffer
 	doc.ToHTML(&buf, s, nil)
-	return buf.String()
+	return template.HTML(buf.String())
 }
 
 // camelizeDown converts a name or other string into a camel case
