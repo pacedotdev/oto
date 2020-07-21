@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/dustin/go-humanize v1.0.0
+	github.com/fatih/structtag v1.2.0
 	github.com/gobuffalo/envy v1.9.0 // indirect
 	github.com/gobuffalo/flect v0.2.1 // indirect
 	github.com/gobuffalo/helpers v0.6.1 // indirect

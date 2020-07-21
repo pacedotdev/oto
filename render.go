@@ -6,8 +6,10 @@ import (
 	"go/doc"
 	"html/template"
 
+	"github.com/fatih/structtag"
 	"github.com/gobuffalo/plush"
 	"github.com/markbates/inflect"
+	"github.com/pkg/errors"
 )
 
 var defaultRuleset = inflect.NewDefaultRuleset()
@@ -21,6 +23,7 @@ func render(template string, def Definition, params map[string]interface{}) (str
 	ctx.Set("json", toJSONHelper)
 	ctx.Set("format_comment_text", formatCommentText)
 	ctx.Set("format_comment_html", formatCommentHTML)
+	ctx.Set("format_tags", formatTags)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -58,4 +61,25 @@ func camelizeDown(s string) string {
 		// as expected in this case.
 	}
 	return defaultRuleset.CamelizeDownFirst(s)
+}
+
+// formatTags formats a list of struct tag strings into one.
+// Will return an error if any of the tag strings are invalid.
+func formatTags(tags ...string) (template.HTML, error) {
+	alltags := &structtag.Tags{}
+	for _, tag := range tags {
+		theseTags, err := structtag.Parse(tag)
+		if err != nil {
+			return "", errors.Wrapf(err, "parse tags: `%s`", tag)
+		}
+		for _, t := range theseTags.Tags() {
+			alltags.Set(t)
+		}
+	}
+	tagsStr := alltags.String()
+	if tagsStr == "" {
+		return "", nil
+	}
+	tagsStr = "`" + tagsStr + "`"
+	return template.HTML(tagsStr), nil
 }

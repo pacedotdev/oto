@@ -40,3 +40,26 @@ func TestCamelizeDown(t *testing.T) {
 		}
 	}
 }
+
+func TestFormatTags(t *testing.T) {
+	is := is.New(t)
+
+	trimBackticks := func(s string) string {
+		is.True(strings.HasPrefix(s, "`"))
+		is.True(strings.HasSuffix(s, "`"))
+		return strings.Trim(s, "`")
+	}
+
+	tagStr, err := formatTags(`json:"field,omitempty"`)
+	is.NoErr(err)
+	is.Equal(trimBackticks(string(tagStr)), `json:"field,omitempty"`)
+
+	tagStr, err = formatTags(`json:"field,omitempty" monkey:"true"`)
+	is.NoErr(err)
+	is.Equal(trimBackticks(string(tagStr)), `json:"field,omitempty" monkey:"true"`)
+
+	tagStr, err = formatTags(`json:"field,omitempty"`, `monkey:"true"`)
+	is.NoErr(err)
+	is.Equal(trimBackticks(string(tagStr)), `json:"field,omitempty" monkey:"true"`)
+
+}
