@@ -126,4 +126,10 @@ oto \
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
 
+## Contributions
+
+Special thank you to:
+
+* @mgutz - for struct tag support
+
 ![A PACE. project](pace-footer.png)
