@@ -51,6 +51,7 @@ You will love it.`)
 	is.Equal(greetInputObject.Fields[0].Type.IsObject, true)
 	is.Equal(greetInputObject.Fields[0].Type.Multiple, false)
 	is.Equal(greetInputObject.Fields[0].Type.Package, "github.com/pacedotdev/oto/testdata/services")
+	is.Equal(greetInputObject.Fields[0].Tag, "tagtest")
 
 	greetOutputObject, err := def.Object(def.Services[0].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)

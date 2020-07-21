@@ -28,7 +28,7 @@ type GreetResponse struct {
 // GetGreetingsRequest is the request object for GreeterService.GetGreetings.
 type GetGreetingsRequest struct {
 	// Page describes which page of data to get.
-	Page services.Page
+	Page services.Page `tagtest`
 }
 
 // GetGreetingsResponse is the respponse object for GreeterService.GetGreetings.

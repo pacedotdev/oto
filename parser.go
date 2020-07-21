@@ -70,6 +70,7 @@ type Field struct {
 	Type      FieldType `json:"type"`
 	OmitEmpty bool      `json:"omitEmpty"`
 	Comment   string    `json:"comment"`
+	Tag       string    `json:"tag"`
 }
 
 // FieldType holds information about the type of data that this
@@ -264,6 +265,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 		if err != nil {
 			return err
 		}
+		field.Tag = v.Tag(i)
 		obj.Fields = append(obj.Fields, field)
 	}
 	p.def.Objects = append(p.def.Objects, obj)
