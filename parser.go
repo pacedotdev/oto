@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fatih/structtag"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
@@ -267,11 +266,10 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 			return err
 		}
 		field.Tag = v.Tag(i)
-		tags, err := structtag.Parse(field.Tag)
-		if err != nil {
-			return p.wrapErr(errors.Wrap(err, "parse struct tag"), pkg, o.Pos())
-		}
-
+		// tags, err := structtag.Parse(field.Tag)
+		// if err != nil {
+		// 	return p.wrapErr(errors.Wrap(err, "parse struct tag"), pkg, o.Pos())
+		// }
 		obj.Fields = append(obj.Fields, field)
 	}
 	p.def.Objects = append(p.def.Objects, obj)
