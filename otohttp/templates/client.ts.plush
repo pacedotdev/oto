@@ -57,9 +57,11 @@ export class Client {
 		<%= for (field) in object.Fields { %>
 			<%= if (field.Type.IsObject) { %>
 				<%= if (field.Type.Multiple) { %>
-					this.<%= camelize_down(field.Name) %> = new Array<<%= field.Type.ObjectName() %>>()
-					for (let i = 0; i < data.<%= camelize_down(field.Name) %>; i++) {
-						this.<%= camelize_down(field.Name) %>.push(new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>[i]));
+					if (data.<%= camelize_down(field.Name) %>) {
+						this.<%= camelize_down(field.Name) %> = new Array<<%= field.Type.ObjectName() %>>()
+						for (let i = 0; i < data.<%= camelize_down(field.Name) %>.length; i++) {
+							this.<%= camelize_down(field.Name) %>.push(new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>[i]));
+						}
 					}
 				<% } else { %>
 					this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>);
