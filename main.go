@@ -40,10 +40,12 @@ flags:`)
 		return err
 	}
 	if *template == "" {
+		flags.PrintDefaults()
 		return errors.New("missing template")
 	}
 	params, err := parseParams(*paramsStr)
 	if err != nil {
+		flags.PrintDefaults()
 		return errors.Wrap(err, "params")
 	}
 	parser := newParser(flags.Args()...)
