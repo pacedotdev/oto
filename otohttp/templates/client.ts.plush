@@ -40,7 +40,14 @@
 		if (data) {
 		<%= for (field) in object.Fields { %>
 			<%= if (field.Type.IsObject) { %>
-				this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>)
+				<%= if (field.Type.Multiple) { %>
+					this.<%= camelize_down(field.Name) %> = new Array<<%= field.Type.ObjectName() %>>();
+					for (let i = 0; i < data.<%= camelize_down(field.Name) %>; i++) {
+						this.<%= camelize_down(field.Name) %>.push(new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>[i]))
+					}
+				<% } else { %>
+					this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>)
+				<% } %>
 			<% } else { %>
 			this.<%= camelize_down(field.Name) %> = data.<%= camelize_down(field.Name) %>
 			<% } %>
