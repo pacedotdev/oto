@@ -6,28 +6,44 @@
 // to format output:
 // 		oto -template ./otohttp/templates/client.ts.plush ./testdata/services/pleasantries | npx prettier --stdin-filepath=file.ts
 
+// HeadersFunc allows you to mutate headers for each request.
+// Useful for adding authorization into the client.
+interface HeadersFunc {
+	(headers: HeadersInit);
+}
+
+// Client provides access to remote services.
+export class Client {
+	// basepath is the path prefix for the requests.
+	// This may be a path, or an absolute URL.
+	public basepath: String = '/oto/'
+	// headers allows calling code to mutate the HTTP
+	// headers of the underlying HTTP requests.
+	public headers: HeadersFunc
+}
+
 <%= for (service) in def.Services { %>
 <%= format_comment_text(service.Comment) %>export class <%= service.Name %> {
+	constructor(readonly client: Client) {}
 	<%= for (method) in service.Methods { %>
-	<%= format_comment_text(method.Comment) %>	async <%= camelize_down(method.Name) %>(<%= camelize_down(method.InputObject.TypeName) %>: <%= method.InputObject.TypeName %>) {
-		if (!<%= camelize_down(method.InputObject.TypeName) %>) {
-			<%= camelize_down(method.InputObject.TypeName) %> = new <%= method.InputObject.TypeName %>()
+	<%= format_comment_text(method.Comment) %>	async <%= camelize_down(method.Name) %>(<%= camelize_down(method.InputObject.TypeName) %>: <%= method.InputObject.TypeName %> = null) {
+		if (<%= camelize_down(method.InputObject.TypeName) %> == null) {
+			<%= camelize_down(method.InputObject.TypeName) %> = new <%= method.InputObject.TypeName %>();
 		}
-		const headers = {
-			'Accept': 'application/json',
-			'Accept-Encoding': 'gzip',
-			'Content-Type': 'application/json',
-		}
-		const response = await fetch('/oto/<%= service.Name %>.<%= method.Name %>', {
+		const headers: HeadersInit = new Headers();
+		headers.set('Accept', 'application/json');
+		headers.set('Content-Type', 'application/json');
+		await this.client.headers(headers);
+		const response = await fetch(this.client.basepath + '<%= service.Name %>.<%= method.Name %>', {
 			method: 'POST',
 			headers: headers,
-			body: <%= camelize_down(method.InputObject.TypeName) %>.asJSON(),
+			body: JSON.stringify(<%= camelize_down(method.InputObject.TypeName) %>),
 		})
 		return response.json().then((json) => {
 			if (json.error) {
-				throw new Error(json.error)
+				throw new Error(json.error);
 			}
-			return new <%= method.OutputObject.TypeName %>(json)
+			return new <%= method.OutputObject.TypeName %>(json);
 		})
 	}
 	<% } %>
@@ -41,15 +57,15 @@
 		<%= for (field) in object.Fields { %>
 			<%= if (field.Type.IsObject) { %>
 				<%= if (field.Type.Multiple) { %>
-					this.<%= camelize_down(field.Name) %> = new Array<<%= field.Type.ObjectName() %>>();
+					this.<%= camelize_down(field.Name) %> = new Array<<%= field.Type.ObjectName() %>>()
 					for (let i = 0; i < data.<%= camelize_down(field.Name) %>; i++) {
-						this.<%= camelize_down(field.Name) %>.push(new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>[i]))
+						this.<%= camelize_down(field.Name) %>.push(new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>[i]));
 					}
 				<% } else { %>
-					this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>)
+					this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>);
 				<% } %>
 			<% } else { %>
-			this.<%= camelize_down(field.Name) %> = data.<%= camelize_down(field.Name) %>
+			this.<%= camelize_down(field.Name) %> = data.<%= camelize_down(field.Name) %>;
 			<% } %>
 		<% } %>
 		}
@@ -57,8 +73,5 @@
 <%= for (field) in object.Fields { %>
 	<%= format_comment_text(field.Comment) %>	<%= camelize_down(field.Name) %>: <%= if (field.Type.IsObject) { %><%= field.Type.TypeName %><% } else { %><%= field.Type.JSType() %><% } %><%= if (field.Type.Multiple) { %>[]<% } %>;
 <% } %>
-	asJSON(): string {
-		return JSON.stringify(this);
-	}
 }
 <% } %>
