@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"go/doc"
 	"html/template"
+	"strings"
 
 	"github.com/fatih/structtag"
 	"github.com/gobuffalo/plush"
@@ -53,14 +54,22 @@ func formatCommentHTML(s string) template.HTML {
 
 // camelizeDown converts a name or other string into a camel case
 // version with the first letter lowercase. "ModelID" becomes "modelID".
-func camelizeDown(s string) string {
-	if s == "ID" {
-		return "id"
-		// note: not sure why I need this, there's a lot that deals with
-		// accronyms in the dependency packages but they don't seem to behave
-		// as expected in this case.
+func camelizeDown(word string) string {
+	if isAcronym(word) {
+		return strings.ToUpper(word)
 	}
-	return defaultRuleset.CamelizeDownFirst(s)
+	words := Split(word)
+	for i := range words {
+		if isAcronym(words[i]) {
+			if i == 0 {
+				words[i] = strings.ToLower(words[i])
+			} else {
+				words[i] = strings.ToUpper(words[i])
+			}
+		}
+	}
+	word = strings.Join(words, "")
+	return strings.ToLower(word[:1]) + word[1:]
 }
 
 // formatTags formats a list of struct tag strings into one.
@@ -83,3 +92,14 @@ func formatTags(tags ...string) (template.HTML, error) {
 	tagsStr = "`" + tagsStr + "`"
 	return template.HTML(tagsStr), nil
 }
+
+func isAcronym(word string) bool {
+	for _, ac := range baseAcronyms {
+		if strings.ToUpper(ac) == strings.ToUpper(word) {
+			return true
+		}
+	}
+	return false
+}
+
+var baseAcronyms = strings.Split(`JSON,JWT,ID,UUID,SQL,ACK,ACL,ADSL,AES,ANSI,API,ARP,ATM,BGP,BSS,CAT,CCITT,CHAP,CIDR,CIR,CLI,CPE,CPU,CRC,CRT,CSMA,CMOS,DCE,DEC,DES,DHCP,DNS,DRAM,DSL,DSLAM,DTE,DMI,EHA,EIA,EIGRP,EOF,ESS,FCC,FCS,FDDI,FTP,GBIC,gbps,GEPOF,HDLC,HTTP,HTTPS,IANA,ICMP,IDF,IDS,IEEE,IETF,IMAP,IP,IPS,ISDN,ISP,kbps,LACP,LAN,LAPB,LAPF,LLC,MAC,MAN,Mbps,MC,MDF,MIB,MoCA,MPLS,MTU,NAC,NAT,NBMA,NIC,NRZ,NRZI,NVRAM,OSI,OSPF,OUI,PAP,PAT,PC,PIM,PIM,PCM,PDU,POP3,POP,POTS,PPP,PPTP,PTT,PVST,RADIUS,RAM,RARP,RFC,RIP,RLL,ROM,RSTP,RTP,RCP,SDLC,SFD,SFP,SLARP,SLIP,SMTP,SNA,SNAP,SNMP,SOF,SRAM,SSH,SSID,STP,SYN,TDM,TFTP,TIA,TOFU,UDP,URL,URI,USB,UTP,VC,VLAN,VLSM,VPN,W3C,WAN,WEP,WiFi,WPA,WWW`, ",")
