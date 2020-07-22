@@ -3,7 +3,7 @@
 Go driven rpc code generation tool for right now.
 
 - 100% Go
-- Describe services with Go interfaces
+- Describe services with Go interfaces (with structs, methods, comments, etc.)
 - Generate server and client code
 - Modify the templates to solve your particular needs
 
