@@ -9,12 +9,14 @@
 <%= format_comment_text(service.Comment) %>export class <%= service.Name %> {
 	<%= for (method) in service.Methods { %>
 	<%= format_comment_text(method.Comment) %>	async <%= camelize_down(method.Name) %>(<%= camelize_down(method.InputObject.TypeName) %>: <%= method.InputObject.TypeName %>) {
+		if (!<%= camelize_down(method.InputObject.TypeName) %>) {
+			<%= camelize_down(method.InputObject.TypeName) %> = new <%= method.InputObject.TypeName %>()
+		}
 		const headers = {
 			'Accept': 'application/json',
 			'Accept-Encoding': 'gzip',
 			'Content-Type': 'application/json',
 		}
-		<%= camelize_down(method.InputObject.TypeName) %> = <%= camelize_down(method.InputObject.TypeName) %> || {}
 		const response = await fetch('/oto/<%= service.Name %>.<%= method.Name %>', {
 			method: 'POST',
 			headers: headers,
@@ -34,7 +36,8 @@
 
 <%= for (object) in def.Objects { %>
 <%= format_comment_text(object.Comment) %>export class <%= object.Name %> {
-	constructor(data: object) {
+	constructor(data?: any) {
+		if (data) {
 		<%= for (field) in object.Fields { %>
 			<%= if (field.Type.IsObject) { %>
 				this.<%= camelize_down(field.Name) %> = new <%= field.Type.ObjectName() %>(data.<%= camelize_down(field.Name) %>)
@@ -42,6 +45,7 @@
 			this.<%= camelize_down(field.Name) %> = data.<%= camelize_down(field.Name) %>
 			<% } %>
 		<% } %>
+		}
 	}
 <%= for (field) in object.Fields { %>
 	<%= format_comment_text(field.Comment) %>	<%= camelize_down(field.Name) %>: <%= if (field.Type.IsObject) { %><%= field.Type.TypeName %><% } else { %><%= field.Type.JSType() %><% } %><%= if (field.Type.Multiple) { %>[]<% } %>;
