@@ -105,6 +105,13 @@ func (f FieldType) JSType() (string, error) {
 	return "", errors.Errorf("oto: type not supported: %s", f.TypeName)
 }
 
+// ObjectName gets the namespace-free object name of the type.
+// For imported packages, the package name is stripped.
+func (f FieldType) ObjectName() string {
+	segs := strings.Split(f.TypeName, ".")
+	return segs[len(segs)-1]
+}
+
 type parser struct {
 	Verbose bool
 
