@@ -52,6 +52,11 @@ You will love it.`)
 	is.Equal(greetInputObject.Fields[0].Type.Multiple, false)
 	is.Equal(greetInputObject.Fields[0].Type.Package, "github.com/pacedotdev/oto/testdata/services")
 	is.Equal(greetInputObject.Fields[0].Tag, `tagtest:"value,option1,option2"`)
+	is.True(greetInputObject.Fields[0].ParsedTags != nil)
+	is.Equal(greetInputObject.Fields[0].ParsedTags["tagtest"].Value, "value")
+	is.Equal(len(greetInputObject.Fields[0].ParsedTags["tagtest"].Options), 2)
+	is.Equal(greetInputObject.Fields[0].ParsedTags["tagtest"].Options[0], "option1")
+	is.Equal(greetInputObject.Fields[0].ParsedTags["tagtest"].Options[1], "option2")
 
 	greetOutputObject, err := def.Object(def.Services[0].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
@@ -82,17 +87,24 @@ You will love it.`)
 	welcomeInputObject, err := def.Object(def.Services[1].Methods[0].InputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(welcomeInputObject.Name, "WelcomeRequest")
-	is.Equal(len(welcomeInputObject.Fields), 2)
+	is.Equal(len(welcomeInputObject.Fields), 4)
+
 	is.Equal(welcomeInputObject.Fields[0].Name, "To")
 	is.Equal(welcomeInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[0].Type.TypeName, "string")
 	is.Equal(welcomeInputObject.Fields[0].Type.Multiple, false)
 	is.Equal(welcomeInputObject.Fields[0].Type.Package, "")
+	is.Equal(welcomeInputObject.Fields[0].Example, "your@email.com")
+
 	is.Equal(welcomeInputObject.Fields[1].Name, "Name")
 	is.Equal(welcomeInputObject.Fields[1].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[1].Type.TypeName, "string")
 	is.Equal(welcomeInputObject.Fields[1].Type.Multiple, false)
 	is.Equal(welcomeInputObject.Fields[1].Type.Package, "")
+	is.Equal(welcomeInputObject.Fields[1].Example, "John Smith")
+
+	is.Equal(welcomeInputObject.Fields[2].Example, float64(3))
+	is.Equal(welcomeInputObject.Fields[3].Example, true)
 
 	welcomeOutputObject, err := def.Object(def.Services[1].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
@@ -149,4 +161,33 @@ func TestFieldJSType(t *testing.T) {
 			t.Errorf("%s expected: %q but got %q", in.TypeName, expected, actual)
 		}
 	}
+}
+
+func TestExtractExample(t *testing.T) {
+	is := is.New(t)
+
+	example, comment, err := extractExample(`
+		This is a comment
+		example: "With an example"
+	`)
+	is.NoErr(err)
+	is.Equal(comment, "This is a comment")
+	is.Equal(example, "With an example")
+
+	example, comment, err = extractExample(`
+		This is a comment
+		example: true
+	`)
+	is.NoErr(err)
+	is.Equal(comment, "This is a comment")
+	is.Equal(example, true)
+
+	example, comment, err = extractExample(`
+		This is a comment
+		example: 123
+	`)
+	is.NoErr(err)
+	is.Equal(comment, "This is a comment")
+	is.Equal(example, float64(123))
+
 }

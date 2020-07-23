@@ -16,6 +16,7 @@ type GreeterService interface {
 // GreetRequest is the request object for GreeterService.Greet.
 type GreetRequest struct {
 	// Names are the names of the people to greet.
+	// example: ["Mat", "David"]
 	Names []string
 }
 
@@ -39,5 +40,6 @@ type GetGreetingsResponse struct {
 // Greeting contains the pleasentry.
 type Greeting struct {
 	// Text is the message.
+	// example: "Hello there"
 	Text string
 }

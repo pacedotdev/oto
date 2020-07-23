@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
 	"go/ast"
 	"go/doc"
@@ -9,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/fatih/structtag"
 	"github.com/pkg/errors"
 	"golang.org/x/tools/go/packages"
 )
@@ -66,11 +69,22 @@ type Object struct {
 
 // Field describes the field inside an Object.
 type Field struct {
-	Name      string    `json:"name"`
-	Type      FieldType `json:"type"`
-	OmitEmpty bool      `json:"omitEmpty"`
-	Comment   string    `json:"comment"`
-	Tag       string    `json:"tag"`
+	Name       string              `json:"name"`
+	Type       FieldType           `json:"type"`
+	OmitEmpty  bool                `json:"omitEmpty"`
+	Comment    string              `json:"comment"`
+	Tag        string              `json:"tag"`
+	ParsedTags map[string]FieldTag `json:"parsedTags"`
+	Example    interface{}         `json:"example"`
+}
+
+// FieldTag is a parsed tag.
+// For more information, see Struct Tags in Go.
+type FieldTag struct {
+	// Value is the value of the tag.
+	Value string `json:"value"`
+	// Options are the options for the tag.
+	Options []string `json:"options"`
 }
 
 // FieldType holds information about the type of data that this
@@ -273,11 +287,30 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 			return err
 		}
 		field.Tag = v.Tag(i)
+		field.ParsedTags, err = p.parseTags(field.Tag)
+		if err != nil {
+			return errors.Wrap(err, "parse field tag")
+		}
 		obj.Fields = append(obj.Fields, field)
 	}
 	p.def.Objects = append(p.def.Objects, obj)
 	p.objects[obj.Name] = struct{}{}
 	return nil
+}
+
+func (p *parser) parseTags(tag string) (map[string]FieldTag, error) {
+	tags, err := structtag.Parse(tag)
+	if err != nil {
+		return nil, err
+	}
+	fieldTags := make(map[string]FieldTag)
+	for _, tag := range tags.Tags() {
+		fieldTags[tag.Key] = FieldTag{
+			Value:   tag.Name,
+			Options: tag.Options,
+		}
+	}
+	return fieldTags, nil
 }
 
 func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
@@ -288,6 +321,10 @@ func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.V
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
 	var err error
+	f.Example, f.Comment, err = extractExample(f.Comment)
+	if err != nil {
+		return f, p.wrapErr(errors.New("extract comment example"), pkg, v.Pos())
+	}
 	f.Type, err = p.parseFieldType(pkg, v)
 	if err != nil {
 		return f, errors.Wrap(err, "parse type")
@@ -442,4 +479,34 @@ outer:
 
 func cleanComment(s string) string {
 	return strings.TrimSpace(s)
+}
+
+// extractExample extracts the example from the comment.
+// It returns a typed example, and the remaining
+// comment string.
+// The example should be on the last line.
+func extractExample(comment string) (interface{}, string, error) {
+	var lines []string
+	const exampleCommentPrefix = "example:"
+	s := bufio.NewScanner(strings.NewReader(comment))
+	for s.Scan() {
+		line := strings.TrimSpace(s.Text())
+		if strings.HasPrefix(line, exampleCommentPrefix) {
+			line = strings.TrimSpace(strings.TrimPrefix(line, exampleCommentPrefix))
+			if line == "" {
+				return nil, strings.Join(lines, "\n"), nil
+			}
+			var val interface{}
+			if err := json.Unmarshal([]byte(line), &val); err != nil {
+				return nil, "", err
+			}
+			return val, strings.Join(lines, "\n"), nil
+		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return nil, strings.Join(lines, "\n"), nil
 }

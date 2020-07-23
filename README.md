@@ -30,12 +30,14 @@ type GreeterService interface {
 // GreetRequest is the request object for GreeterService.Greet.
 type GreetRequest struct {
     // Name is the person to greet.
+    // example: "Mat Ryer"
     Name string
 }
 
 // GreetResponse is the response object for GreeterService.Greet.
 type GreetResponse struct {
     // Greeting is the greeting that was generated.
+    // example: "Hello Mat Ryer"
     Greeting string
 }
 ```
@@ -72,8 +74,10 @@ Implement the service in Go:
 // greeter_service.go
 package main
 
+// GreeterService makes nice greetings.
 type GreeterService struct{}
 
+// Greet makes a greeting.
 func (GreeterService) Greet(ctx context.Context, r GreetRequest) (*GreetResponse, error) {
     resp := &GreetResponse{
         Greeting: "Hello " + r.Name,
@@ -112,7 +116,7 @@ greeterService
     .catch(e => alert(e));
 ```
 
-### Specifying additional template data
+## Specifying additional template data
 
 You can provide strings to your templates via the `-params` flag:
 
@@ -125,6 +129,24 @@ oto \
 ```
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
+
+## Examples
+
+To provide an example value for a field, you may use the `example:` prefix line
+in a comment.
+
+```go
+// GreetRequest is the request object for GreeterService.Greet.
+type GreetRequest struct {
+    // Name is the person to greet.
+    // example: "Mat Ryer"
+    Name string
+}
+```
+
+* The example must be valid JSON
+
+The example is extracted and made available via the `Field.Example` field.
 
 ## Contributions
 
