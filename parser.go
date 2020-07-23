@@ -52,10 +52,11 @@ type Service struct {
 
 // Method describes a method that a Service can perform.
 type Method struct {
-	Name         string    `json:"name"`
-	InputObject  FieldType `json:"inputObject"`
-	OutputObject FieldType `json:"outputObject"`
-	Comment      string    `json:"comment"`
+	Name           string    `json:"name"`
+	NameLowerCamel string    `json:"nameLowerCamel"`
+	InputObject    FieldType `json:"inputObject"`
+	OutputObject   FieldType `json:"outputObject"`
+	Comment        string    `json:"comment"`
 }
 
 // Object describes a data structure that is part of this definition.
@@ -69,13 +70,14 @@ type Object struct {
 
 // Field describes the field inside an Object.
 type Field struct {
-	Name       string              `json:"name"`
-	Type       FieldType           `json:"type"`
-	OmitEmpty  bool                `json:"omitEmpty"`
-	Comment    string              `json:"comment"`
-	Tag        string              `json:"tag"`
-	ParsedTags map[string]FieldTag `json:"parsedTags"`
-	Example    interface{}         `json:"example"`
+	Name           string              `json:"name"`
+	NameLowerCamel string              `json:"nameLowerCamel"`
+	Type           FieldType           `json:"type"`
+	OmitEmpty      bool                `json:"omitEmpty"`
+	Comment        string              `json:"comment"`
+	Tag            string              `json:"tag"`
+	ParsedTags     map[string]FieldTag `json:"parsedTags"`
+	Example        interface{}         `json:"example"`
 }
 
 // FieldTag is a parsed tag.
@@ -90,40 +92,14 @@ type FieldTag struct {
 // FieldType holds information about the type of data that this
 // Field stores.
 type FieldType struct {
-	TypeID   string `json:"typeID"`
-	TypeName string `json:"typeName"`
-	Multiple bool   `json:"multiple"`
-	Package  string `json:"package"`
-	IsObject bool   `json:"isObject"`
-}
-
-// JSType gets the JavaScript type for this FieldType.
-func (f FieldType) JSType() (string, error) {
-	if f.IsObject {
-		return "object", nil
-	}
-	switch f.TypeName {
-	case "interface{}":
-		return "any", nil
-	case "map[string]interface{}":
-		return "object", nil
-	case "string":
-		return "string", nil
-	case "bool":
-		return "boolean", nil
-	case "int", "int16", "int32", "int64",
-		"uint", "uint16", "uint32", "uint64",
-		"float32", "float64":
-		return "number", nil
-	}
-	return "", errors.Errorf("oto: type not supported: %s", f.TypeName)
-}
-
-// ObjectName gets the namespace-free object name of the type.
-// For imported packages, the package name is stripped.
-func (f FieldType) ObjectName() string {
-	segs := strings.Split(f.TypeName, ".")
-	return segs[len(segs)-1]
+	TypeID               string `json:"typeID"`
+	TypeName             string `json:"typeName"`
+	ObjectName           string `json:"objectName"`
+	ObjectNameLowerCamel string `json:"objectNameLowerCamel"`
+	Multiple             bool   `json:"multiple"`
+	Package              string `json:"package"`
+	IsObject             bool   `json:"isObject"`
+	JSType               string `json:"jsType"`
 }
 
 type parser struct {
@@ -240,6 +216,7 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (Method, error) {
 	var m Method
 	m.Name = methodType.Name()
+	m.NameLowerCamel = camelizeDown(m.Name)
 	m.Comment = p.commentForMethod(serviceName, m.Name)
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
@@ -316,6 +293,7 @@ func (p *parser) parseTags(tag string) (map[string]FieldTag, error) {
 func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
 	var f Field
 	f.Name = v.Name()
+	f.NameLowerCamel = camelizeDown(f.Name)
 	f.Comment = p.commentForField(objectName, f.Name)
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
@@ -361,8 +339,28 @@ func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 		}
 	}
 	ftype.TypeName = types.TypeString(typ, resolver)
-	typeNameWithoutPackage := types.TypeString(typ, func(other *types.Package) string { return "" })
-	ftype.TypeID = pkgPath + "." + typeNameWithoutPackage
+	ftype.ObjectName = types.TypeString(typ, func(other *types.Package) string { return "" })
+	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
+	ftype.TypeID = pkgPath + "." + ftype.ObjectName
+	if ftype.IsObject {
+		ftype.JSType = "object"
+	} else {
+		switch ftype.TypeName {
+		case "interface{}":
+			ftype.JSType = "any"
+		case "map[string]interface{}":
+			ftype.JSType = "object"
+		case "string":
+			ftype.JSType = "string"
+		case "bool":
+			ftype.JSType = "boolean"
+		case "int", "int16", "int32", "int64",
+			"uint", "uint16", "uint32", "uint64",
+			"float32", "float64":
+			ftype.JSType = "number"
+		}
+	}
+
 	return ftype, nil
 }
 
@@ -370,9 +368,10 @@ func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 // mentioned in p.outputObjects.
 func (p *parser) addOutputFields() error {
 	errorField := Field{
-		OmitEmpty: true,
-		Name:      "Error",
-		Comment:   "Error is string explaining what went wrong. Empty if everything was fine.",
+		OmitEmpty:      true,
+		Name:           "Error",
+		NameLowerCamel: "error",
+		Comment:        "Error is string explaining what went wrong. Empty if everything was fine.",
 		Type: FieldType{
 			TypeName: "string",
 		},

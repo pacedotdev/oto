@@ -21,6 +21,7 @@ func TestParse(t *testing.T) {
 You will love it.`)
 	is.Equal(len(def.Services[0].Methods), 2)
 	is.Equal(def.Services[0].Methods[0].Name, "GetGreetings")
+	is.Equal(def.Services[0].Methods[0].NameLowerCamel, "getGreetings")
 	is.Equal(def.Services[0].Methods[0].Comment, "GetGreetings gets a range of saved Greetings.")
 	is.Equal(def.Services[0].Methods[0].InputObject.TypeName, "GetGreetingsRequest")
 	is.Equal(def.Services[0].Methods[0].InputObject.Multiple, false)
@@ -30,6 +31,7 @@ You will love it.`)
 	is.Equal(def.Services[0].Methods[0].OutputObject.Package, "")
 
 	is.Equal(def.Services[0].Methods[1].Name, "Greet")
+	is.Equal(def.Services[0].Methods[1].NameLowerCamel, "greet")
 	is.Equal(def.Services[0].Methods[1].Comment, "Greet creates a Greeting for one or more people.")
 	is.Equal(def.Services[0].Methods[1].InputObject.TypeName, "GreetRequest")
 	is.Equal(def.Services[0].Methods[1].InputObject.Multiple, false)
@@ -44,9 +46,13 @@ You will love it.`)
 	is.Equal(greetInputObject.Comment, "GetGreetingsRequest is the request object for GreeterService.GetGreetings.")
 	is.Equal(len(greetInputObject.Fields), 1)
 	is.Equal(greetInputObject.Fields[0].Name, "Page")
+	is.Equal(greetInputObject.Fields[0].NameLowerCamel, "page")
 	is.Equal(greetInputObject.Fields[0].Comment, "Page describes which page of data to get.")
 	is.Equal(greetInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetInputObject.Fields[0].Type.TypeName, "services.Page")
+	is.Equal(greetInputObject.Fields[0].Type.ObjectName, "Page")
+	is.Equal(greetInputObject.Fields[0].Type.ObjectNameLowerCamel, "page")
+	is.Equal(greetInputObject.Fields[0].Type.JSType, "object")
 	is.Equal(greetInputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/testdata/services.Page")
 	is.Equal(greetInputObject.Fields[0].Type.IsObject, true)
 	is.Equal(greetInputObject.Fields[0].Type.Multiple, false)
@@ -63,12 +69,14 @@ You will love it.`)
 	is.Equal(greetOutputObject.Name, "GetGreetingsResponse")
 	is.Equal(len(greetOutputObject.Fields), 2)
 	is.Equal(greetOutputObject.Fields[0].Name, "Greetings")
+	is.Equal(greetOutputObject.Fields[0].NameLowerCamel, "greetings")
 	is.Equal(greetOutputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/testdata/services/pleasantries.Greeting")
 	is.Equal(greetOutputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetOutputObject.Fields[0].Type.TypeName, "Greeting")
 	is.Equal(greetOutputObject.Fields[0].Type.Multiple, true)
 	is.Equal(greetOutputObject.Fields[0].Type.Package, "")
 	is.Equal(greetOutputObject.Fields[1].Name, "Error")
+	is.Equal(greetOutputObject.Fields[1].NameLowerCamel, "error")
 	is.Equal(greetOutputObject.Fields[1].OmitEmpty, true)
 	is.Equal(greetOutputObject.Fields[1].Type.TypeName, "string")
 	is.Equal(greetOutputObject.Fields[1].Type.Multiple, false)
@@ -90,6 +98,7 @@ You will love it.`)
 	is.Equal(len(welcomeInputObject.Fields), 4)
 
 	is.Equal(welcomeInputObject.Fields[0].Name, "To")
+	is.Equal(welcomeInputObject.Fields[0].NameLowerCamel, "to")
 	is.Equal(welcomeInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[0].Type.TypeName, "string")
 	is.Equal(welcomeInputObject.Fields[0].Type.Multiple, false)
@@ -97,26 +106,33 @@ You will love it.`)
 	is.Equal(welcomeInputObject.Fields[0].Example, "your@email.com")
 
 	is.Equal(welcomeInputObject.Fields[1].Name, "Name")
+	is.Equal(welcomeInputObject.Fields[1].NameLowerCamel, "name")
 	is.Equal(welcomeInputObject.Fields[1].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[1].Type.TypeName, "string")
+	is.Equal(welcomeInputObject.Fields[1].Type.JSType, "string")
 	is.Equal(welcomeInputObject.Fields[1].Type.Multiple, false)
 	is.Equal(welcomeInputObject.Fields[1].Type.Package, "")
 	is.Equal(welcomeInputObject.Fields[1].Example, "John Smith")
 
 	is.Equal(welcomeInputObject.Fields[2].Example, float64(3))
+	is.Equal(welcomeInputObject.Fields[2].Type.JSType, "number")
+
 	is.Equal(welcomeInputObject.Fields[3].Example, true)
+	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "boolean")
 
 	welcomeOutputObject, err := def.Object(def.Services[1].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(welcomeOutputObject.Name, "WelcomeResponse")
 	is.Equal(len(welcomeOutputObject.Fields), 2)
 	is.Equal(welcomeOutputObject.Fields[0].Name, "Message")
+	is.Equal(welcomeOutputObject.Fields[0].NameLowerCamel, "message")
 	is.Equal(welcomeOutputObject.Fields[0].Type.IsObject, false)
 	is.Equal(welcomeOutputObject.Fields[0].OmitEmpty, false)
 	is.Equal(welcomeOutputObject.Fields[0].Type.TypeName, "string")
 	is.Equal(welcomeOutputObject.Fields[0].Type.Multiple, false)
 	is.Equal(welcomeOutputObject.Fields[0].Type.Package, "")
 	is.Equal(welcomeOutputObject.Fields[1].Name, "Error")
+	is.Equal(welcomeOutputObject.Fields[1].NameLowerCamel, "error")
 	is.Equal(welcomeOutputObject.Fields[1].OmitEmpty, true)
 	is.Equal(welcomeOutputObject.Fields[1].Type.TypeName, "string")
 	is.Equal(welcomeOutputObject.Fields[1].Type.Multiple, false)
@@ -138,29 +154,6 @@ You will love it.`)
 	// b, err := json.MarshalIndent(def, "", "  ")
 	// is.NoErr(err)
 	// log.Println(string(b))
-}
-
-func TestFieldJSType(t *testing.T) {
-	is := is.New(t)
-	for in, expected := range map[FieldType]string{
-		{TypeName: "string"}:                     "string",
-		{TypeName: "int"}:                        "number",
-		{TypeName: "uint"}:                       "number",
-		{TypeName: "uint32"}:                     "number",
-		{TypeName: "int32"}:                      "number",
-		{TypeName: "int64"}:                      "number",
-		{TypeName: "float64"}:                    "number",
-		{TypeName: "bool"}:                       "boolean",
-		{TypeName: "interface{}"}:                "any",
-		{TypeName: "map[string]interface{}"}:     "object",
-		{TypeName: "SomeObject", IsObject: true}: "object",
-	} {
-		actual, err := in.JSType()
-		is.NoErr(err)
-		if actual != expected {
-			t.Errorf("%s expected: %q but got %q", in.TypeName, expected, actual)
-		}
-	}
 }
 
 func TestExtractExample(t *testing.T) {
