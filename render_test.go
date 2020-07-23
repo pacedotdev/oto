@@ -33,6 +33,9 @@ package <%= def.PackageName %>`
 func TestCamelizeDown(t *testing.T) {
 	for in, expected := range map[string]string{
 		"CamelsAreGreat": "camelsAreGreat",
+		"ID":             "id",
+		"HTML":           "html",
+		"PreviewHTML":    "previewHTML",
 	} {
 		actual := camelizeDown(in)
 		if actual != expected {
