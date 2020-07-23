@@ -374,6 +374,7 @@ func (p *parser) addOutputFields() error {
 		Comment:        "Error is string explaining what went wrong. Empty if everything was fine.",
 		Type: FieldType{
 			TypeName: "string",
+			JSType:   "string",
 		},
 	}
 	for typeName := range p.outputObjects {
