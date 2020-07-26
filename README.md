@@ -5,11 +5,11 @@ Go driven rpc code generation tool for right now.
 - 100% Go
 - Describe services with Go interfaces (with structs, methods, comments, etc.)
 - Generate server and client code
-- Modify the templates to solve your particular needs
+- Production ready templates (or copy and modify)
 
 ## Templates
 
-In most cases the templates in this project will be enough, but you are free to copy and modify them to suit your specific needs.
+These templates are already being used in production.
 
 * There are some [official Oto templates](https://github.com/pacedotdev/oto/tree/master/otohttp/templates)
 * The [Pace CLI tool](https://github.com/pacedotdev/pace/blob/master/oto/cli.go.plush) is generated from an open-source CLI template
