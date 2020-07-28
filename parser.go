@@ -8,6 +8,7 @@ import (
 	"go/doc"
 	"go/token"
 	"go/types"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -509,4 +510,44 @@ func extractExample(comment string) (interface{}, string, error) {
 		lines = append(lines, line)
 	}
 	return nil, strings.Join(lines, "\n"), nil
+}
+
+// extractCommentMetadata extracts key value pairs from the comment.
+// It returns a map of metadata, and the
+// remaining comment string.
+// Metadata fields should succeed the comment string.
+func extractCommentMetadata(comment string) (map[string]interface{}, string, error) {
+	// regex to pull key value metadata
+	// used since we can't simply trust lines that contain a colon
+	metadataCommentRegex := regexp.MustCompile(`^.*:.*`)
+	var lines []string
+	var metadata = make(map[string]interface{})
+
+	s := bufio.NewScanner(strings.NewReader(comment))
+	for s.Scan() {
+		line := strings.TrimSpace(s.Text())
+		if metadataCommentRegex.MatchString(line) {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				return nil, strings.Join(lines, "\n"), nil
+			}
+			// SplitN is being used to ensure that colons can exist
+			// in values by only splitting on the first colon in the line
+			splitLine := strings.SplitN(line, ":", 2)
+			key := splitLine[0]
+			value := strings.TrimSpace(splitLine[1])
+			var val interface{}
+			if err := json.Unmarshal([]byte(value), &val); err != nil {
+				return nil, "", err
+			}
+			metadata[key] = val
+			continue
+		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		lines = append(lines, line)
+	}
+	return metadata, strings.Join(lines, "\n"), nil
 }

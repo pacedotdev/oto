@@ -184,3 +184,19 @@ func TestExtractExample(t *testing.T) {
 	is.Equal(example, float64(123))
 
 }
+
+func TestExtractCommentMetadata(t *testing.T) {
+	is := is.New(t)
+
+	metadata, comment, err := extractCommentMetadata(`
+		This is a comment
+		example: "With an example"
+		required: true
+		monkey: 24
+	`)
+	is.NoErr(err)
+	is.Equal(comment, "This is a comment")
+	is.Equal(metadata["example"], "With an example")
+	is.Equal(metadata["required"], true)
+	is.Equal(metadata["monkey"], float64(24))
+}
