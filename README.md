@@ -104,6 +104,7 @@ func main() {
     server := otohttp.NewServer()
     generated.RegisterGreeterService(server, g)
     http.Handle("/oto/", server)
+    http.Handle("/", http.FileServer(http.Dir(".")))
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
