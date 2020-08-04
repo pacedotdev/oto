@@ -65,12 +65,12 @@ oto -template ./templates/server.go.plush \
     -out ./generated/oto.gen.go \
     -ignore Ignorer \
     -pkg generated \
-    ./path/to/definition
+    ./definitions
 gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go
 oto -template ./templates/client.js.plush \
     -out ./generated/oto.gen.js \
     -ignore Ignorer \
-    ./path/to/definition
+    ./definitions
 ```
 
 - Run `oto -help` for more information about these flags
@@ -85,8 +85,8 @@ package main
 type GreeterService struct{}
 
 // Greet makes a greeting.
-func (GreeterService) Greet(ctx context.Context, r GreetRequest) (*GreetResponse, error) {
-    resp := &GreetResponse{
+func (GreeterService) Greet(ctx context.Context, r generated.GreetRequest) (*generated.GreetResponse, error) {
+    resp := &generated.GreetResponse{
         Greeting: "Hello " + r.Name,
     }
     return resp, nil
@@ -111,7 +111,7 @@ func main() {
 Use the generated client to access the service in JavaScript:
 
 ```javascript
-import { GreeterService } from "oto.gen.js";
+import { GreeterService } from "./generated/oto.gen.js";
 
 const greeterService = new GreeterService();
 
