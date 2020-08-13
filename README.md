@@ -62,15 +62,15 @@ Use the `oto` tool to generate a client and server:
 ```bash
 mkdir generated
 oto -template ./templates/server.go.plush \
-    -out ./generated/oto.gen.go \
+    -out ./oto.gen.go \
     -ignore Ignorer \
     -pkg generated \
-    ./path/to/definition
-gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go
+    ./definition
+gofmt -w ./oto.gen.go ./oto.gen.go
 oto -template ./templates/client.js.plush \
-    -out ./generated/oto.gen.js \
+    -out ./oto.gen.js \
     -ignore Ignorer \
-    ./path/to/definition
+    ./definition
 ```
 
 - Run `oto -help` for more information about these flags
@@ -130,7 +130,7 @@ You can provide strings to your templates via the `-params` flag:
 ```bash
 oto \
     -template ./templates/server.go.plush \
-    -out ./generated/oto.gen.go \
+    -out ./oto.gen.go \
     -params "key1:value1,key2:value2" \
     ./path/to/definition
 ```
