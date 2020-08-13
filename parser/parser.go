@@ -17,7 +17,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-var errNotFound = errors.New("not found")
+// ErrNotFound is returned when an Object is not found.
+var ErrNotFound = errors.New("not found")
 
 // Definition describes an Oto definition.
 type Definition struct {
@@ -32,7 +33,7 @@ type Definition struct {
 	Imports map[string]string `json:"imports"`
 }
 
-// Object looks up an object by name. Returns errNotFound error
+// Object looks up an object by name. Returns ErrNotFound error
 // if it cannot find it.
 func (d *Definition) Object(name string) (*Object, error) {
 	for i := range d.Objects {
@@ -41,7 +42,7 @@ func (d *Definition) Object(name string) (*Object, error) {
 			return obj, nil
 		}
 	}
-	return nil, errNotFound
+	return nil, ErrNotFound
 }
 
 // Service describes a service, akin to an interface in Go.
