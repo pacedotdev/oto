@@ -17,10 +17,12 @@ func TestParse(t *testing.T) {
 	is.Equal(def.PackageName, "pleasantries")
 	is.Equal(len(def.Services), 2) // should be 2 services
 	is.Equal(def.Services[0].Name, "GreeterService")
+	is.Equal(def.Services[0].Metadata["strapline"], "A lovely greeter service") // custom metadata
 	is.Equal(def.Services[0].Comment, `GreeterService is a polite API.
 You will love it.`)
 	is.Equal(len(def.Services[0].Methods), 2)
 	is.Equal(def.Services[0].Methods[0].Name, "GetGreetings")
+	is.Equal(def.Services[0].Methods[0].Metadata["featured"], false) // custom metadata
 	is.Equal(def.Services[0].Methods[0].NameLowerCamel, "getGreetings")
 	is.Equal(def.Services[0].Methods[0].Comment, "GetGreetings gets a range of saved Greetings.")
 	is.Equal(def.Services[0].Methods[0].InputObject.TypeName, "GetGreetingsRequest")
@@ -31,6 +33,7 @@ You will love it.`)
 	is.Equal(def.Services[0].Methods[0].OutputObject.Package, "")
 
 	is.Equal(def.Services[0].Methods[1].Name, "Greet")
+	is.Equal(def.Services[0].Methods[1].Metadata["featured"], true) // custom metadata
 	is.Equal(def.Services[0].Methods[1].NameLowerCamel, "greet")
 	is.Equal(def.Services[0].Methods[1].Comment, "Greet creates a Greeting for one or more people.")
 	is.Equal(def.Services[0].Methods[1].InputObject.TypeName, "GreetRequest")
@@ -44,6 +47,7 @@ You will love it.`)
 	is.NoErr(err)
 	is.Equal(greetInputObject.Name, "GetGreetingsRequest")
 	is.Equal(greetInputObject.Comment, "GetGreetingsRequest is the request object for GreeterService.GetGreetings.")
+	is.Equal(greetInputObject.Metadata["featured"], true) // custom metadata
 	is.Equal(len(greetInputObject.Fields), 1)
 	is.Equal(greetInputObject.Fields[0].Name, "Page")
 	is.Equal(greetInputObject.Fields[0].NameLowerCamel, "page")
@@ -67,6 +71,8 @@ You will love it.`)
 	greetOutputObject, err := def.Object(def.Services[0].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(greetOutputObject.Name, "GetGreetingsResponse")
+	is.Equal(greetOutputObject.Comment, "GetGreetingsResponse is the respponse object for GreeterService.GetGreetings.")
+	is.Equal(greetOutputObject.Metadata["featured"], false) // custom metadata
 	is.Equal(len(greetOutputObject.Fields), 2)
 	is.Equal(greetOutputObject.Fields[0].Name, "Greetings")
 	is.Equal(greetOutputObject.Fields[0].NameLowerCamel, "greetings")
@@ -98,6 +104,8 @@ You will love it.`)
 	is.Equal(len(welcomeInputObject.Fields), 4)
 
 	is.Equal(welcomeInputObject.Fields[0].Name, "To")
+	is.Equal(welcomeInputObject.Fields[0].Comment, "To is the address of the person to send the message to.")
+	is.Equal(welcomeInputObject.Fields[0].Metadata["featured"], true)
 	is.Equal(welcomeInputObject.Fields[0].NameLowerCamel, "to")
 	is.Equal(welcomeInputObject.Fields[0].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[0].Type.TypeName, "string")
@@ -106,6 +114,7 @@ You will love it.`)
 	is.Equal(welcomeInputObject.Fields[0].Example, "your@email.com")
 
 	is.Equal(welcomeInputObject.Fields[1].Name, "Name")
+	is.True(welcomeInputObject.Fields[0].Metadata != nil) // no metadata shouldn't be nil
 	is.Equal(welcomeInputObject.Fields[1].NameLowerCamel, "name")
 	is.Equal(welcomeInputObject.Fields[1].OmitEmpty, false)
 	is.Equal(welcomeInputObject.Fields[1].Type.TypeName, "string")
@@ -154,35 +163,6 @@ You will love it.`)
 	// b, err := json.MarshalIndent(def, "", "  ")
 	// is.NoErr(err)
 	// log.Println(string(b))
-}
-
-func TestExtractExample(t *testing.T) {
-	is := is.New(t)
-
-	example, comment, err := extractExample(`
-		This is a comment
-		example: "With an example"
-	`)
-	is.NoErr(err)
-	is.Equal(comment, "This is a comment")
-	is.Equal(example, "With an example")
-
-	example, comment, err = extractExample(`
-		This is a comment
-		example: true
-	`)
-	is.NoErr(err)
-	is.Equal(comment, "This is a comment")
-	is.Equal(example, true)
-
-	example, comment, err = extractExample(`
-		This is a comment
-		example: 123
-	`)
-	is.NoErr(err)
-	is.Equal(comment, "This is a comment")
-	is.Equal(example, float64(123))
-
 }
 
 func TestExtractCommentMetadata(t *testing.T) {

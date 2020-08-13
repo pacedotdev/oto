@@ -49,6 +49,9 @@ type Service struct {
 	Name    string   `json:"name"`
 	Methods []Method `json:"methods"`
 	Comment string   `json:"comment"`
+	// Metadata are typed key/value pairs extracted from the
+	// comments.
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // Method describes a method that a Service can perform.
@@ -58,6 +61,9 @@ type Method struct {
 	InputObject    FieldType `json:"inputObject"`
 	OutputObject   FieldType `json:"outputObject"`
 	Comment        string    `json:"comment"`
+	// Metadata are typed key/value pairs extracted from the
+	// comments.
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // Object describes a data structure that is part of this definition.
@@ -67,6 +73,9 @@ type Object struct {
 	Imported bool    `json:"imported"`
 	Fields   []Field `json:"fields"`
 	Comment  string  `json:"comment"`
+	// Metadata are typed key/value pairs extracted from the
+	// comments.
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // Field describes the field inside an Object.
@@ -79,6 +88,9 @@ type Field struct {
 	Tag            string              `json:"tag"`
 	ParsedTags     map[string]FieldTag `json:"parsedTags"`
 	Example        interface{}         `json:"example"`
+	// Metadata are typed key/value pairs extracted from the
+	// comments.
+	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // FieldTag is a parsed tag.
@@ -199,6 +211,11 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 	var s Service
 	s.Name = obj.Name()
 	s.Comment = p.commentForType(s.Name)
+	var err error
+	s.Metadata, s.Comment, err = extractCommentMetadata(s.Comment)
+	if err != nil {
+		return s, p.wrapErr(errors.New("extract comment metadata"), pkg, obj.Pos())
+	}
 	if p.Verbose {
 		fmt.Printf("%s ", s.Name)
 	}
@@ -219,12 +236,16 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	m.Name = methodType.Name()
 	m.NameLowerCamel = camelizeDown(m.Name)
 	m.Comment = p.commentForMethod(serviceName, m.Name)
+	var err error
+	m.Metadata, m.Comment, err = extractCommentMetadata(m.Comment)
+	if err != nil {
+		return m, p.wrapErr(errors.New("extract comment metadata"), pkg, methodType.Pos())
+	}
 	sig := methodType.Type().(*types.Signature)
 	inputParams := sig.Params()
 	if inputParams.Len() != 1 {
 		return m, p.wrapErr(errors.New("invalid method signature: expected Method(MethodRequest) MethodResponse"), pkg, methodType.Pos())
 	}
-	var err error
 	m.InputObject, err = p.parseFieldType(pkg, inputParams.At(0))
 	if err != nil {
 		return m, errors.Wrap(err, "parse input object type")
@@ -246,6 +267,11 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	var obj Object
 	obj.Name = o.Name()
 	obj.Comment = p.commentForType(obj.Name)
+	var err error
+	obj.Metadata, obj.Comment, err = extractCommentMetadata(obj.Comment)
+	if err != nil {
+		return p.wrapErr(errors.New("extract comment metadata"), pkg, o.Pos())
+	}
 	if _, found := p.objects[obj.Name]; found {
 		// if this has already been parsed, skip it
 		return nil
@@ -300,9 +326,12 @@ func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.V
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
 	var err error
-	f.Example, f.Comment, err = extractExample(f.Comment)
+	f.Metadata, f.Comment, err = extractCommentMetadata(f.Comment)
 	if err != nil {
-		return f, p.wrapErr(errors.New("extract comment example"), pkg, v.Pos())
+		return f, p.wrapErr(errors.New("extract comment metadata"), pkg, v.Pos())
+	}
+	if example, ok := f.Metadata["example"]; ok {
+		f.Example = example
 	}
 	f.Type, err = p.parseFieldType(pkg, v)
 	if err != nil {
@@ -480,36 +509,6 @@ outer:
 
 func cleanComment(s string) string {
 	return strings.TrimSpace(s)
-}
-
-// extractExample extracts the example from the comment.
-// It returns a typed example, and the remaining
-// comment string.
-// The example should be on the last line.
-func extractExample(comment string) (interface{}, string, error) {
-	var lines []string
-	const exampleCommentPrefix = "example:"
-	s := bufio.NewScanner(strings.NewReader(comment))
-	for s.Scan() {
-		line := strings.TrimSpace(s.Text())
-		if strings.HasPrefix(line, exampleCommentPrefix) {
-			line = strings.TrimSpace(strings.TrimPrefix(line, exampleCommentPrefix))
-			if line == "" {
-				return nil, strings.Join(lines, "\n"), nil
-			}
-			var val interface{}
-			if err := json.Unmarshal([]byte(line), &val); err != nil {
-				return nil, "", err
-			}
-			return val, strings.Join(lines, "\n"), nil
-		}
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		lines = append(lines, line)
-	}
-	return nil, strings.Join(lines, "\n"), nil
 }
 
 // metadataCommentRegex is the regex to pull key value metadata
