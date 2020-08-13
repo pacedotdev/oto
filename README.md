@@ -137,7 +137,26 @@ oto \
 
 Within your templates, you may access these strings with `<%= params["key1"] %>`.
 
-## Examples
+## Comment metadata
+
+It's possible to include additional metadata for services, methods, objects, and fields
+in the comments.
+
+```go
+// Thing does something.
+// field: "value"
+type Thing struct {
+    //...
+}
+```
+
+The `Metadata["field"]` value will be the string `value`.
+
+* The value must be valid JSON (for strings, use quotes)
+
+Examples are officially supported, but all data is available via the `Metadata` map fields.
+
+### Examples
 
 To provide an example value for a field, you may use the `example:` prefix line
 in a comment.
