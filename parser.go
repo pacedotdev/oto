@@ -512,17 +512,17 @@ func extractExample(comment string) (interface{}, string, error) {
 	return nil, strings.Join(lines, "\n"), nil
 }
 
+// metadataCommentRegex is the regex to pull key value metadata
+// used since we can't simply trust lines that contain a colon
+var metadataCommentRegex = regexp.MustCompile(`^.*:.*`)
+
 // extractCommentMetadata extracts key value pairs from the comment.
 // It returns a map of metadata, and the
 // remaining comment string.
 // Metadata fields should succeed the comment string.
 func extractCommentMetadata(comment string) (map[string]interface{}, string, error) {
-	// regex to pull key value metadata
-	// used since we can't simply trust lines that contain a colon
-	metadataCommentRegex := regexp.MustCompile(`^.*:.*`)
 	var lines []string
 	var metadata = make(map[string]interface{})
-
 	s := bufio.NewScanner(strings.NewReader(comment))
 	for s.Scan() {
 		line := strings.TrimSpace(s.Text())
