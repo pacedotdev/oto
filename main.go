@@ -14,6 +14,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Version is set during build.
+var Version = "dev"
+
 func main() {
 	if err := run(os.Stdout, os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
@@ -24,7 +27,7 @@ func main() {
 func run(stdout io.Writer, args []string) error {
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.Usage = func() {
-		fmt.Println(args[0] + ` usage:
+		fmt.Println(args[0] + " " + Version + ` usage:
 	oto [flags] paths [[path2] [path3]...]`)
 		fmt.Println(`
 flags:`)
