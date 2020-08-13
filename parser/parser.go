@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bufio"
@@ -115,7 +115,8 @@ type FieldType struct {
 	JSType               string `json:"jsType"`
 }
 
-type parser struct {
+// Parser parses Oto Go definition packages.
+type Parser struct {
 	Verbose bool
 
 	ExcludeInterfaces []string
@@ -132,16 +133,17 @@ type parser struct {
 	docs *doc.Package
 }
 
-// newParser makes a fresh parser using the specified patterns.
+// New makes a fresh parser using the specified patterns.
 // The patterns should be the args passed into the tool (after any flags)
 // and will be passed to the underlying build system.
-func newParser(patterns ...string) *parser {
-	return &parser{
+func New(patterns ...string) *Parser {
+	return &Parser{
 		patterns: patterns,
 	}
 }
 
-func (p *parser) parse() (Definition, error) {
+// Parse parses the files specified, returning the definition.
+func (p *Parser) Parse() (Definition, error) {
 	cfg := &packages.Config{
 		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName | packages.NeedSyntax,
 		Tests: false,
@@ -207,7 +209,7 @@ func (p *parser) parse() (Definition, error) {
 	return p.def, nil
 }
 
-func (p *parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (Service, error) {
+func (p *Parser) parseService(pkg *packages.Package, obj types.Object, interfaceType *types.Interface) (Service, error) {
 	var s Service
 	s.Name = obj.Name()
 	s.Comment = p.commentForType(s.Name)
@@ -231,7 +233,7 @@ func (p *parser) parseService(pkg *packages.Package, obj types.Object, interface
 	return s, nil
 }
 
-func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (Method, error) {
+func (p *Parser) parseMethod(pkg *packages.Package, serviceName string, methodType *types.Func) (Method, error) {
 	var m Method
 	m.Name = methodType.Name()
 	m.NameLowerCamel = camelizeDown(m.Name)
@@ -263,7 +265,7 @@ func (p *parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 }
 
 // parseObject parses a struct type and adds it to the Definition.
-func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
+func (p *Parser) parseObject(pkg *packages.Package, o types.Object, v *types.Struct) error {
 	var obj Object
 	obj.Name = o.Name()
 	obj.Comment = p.commentForType(obj.Name)
@@ -302,7 +304,7 @@ func (p *parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	return nil
 }
 
-func (p *parser) parseTags(tag string) (map[string]FieldTag, error) {
+func (p *Parser) parseTags(tag string) (map[string]FieldTag, error) {
 	tags, err := structtag.Parse(tag)
 	if err != nil {
 		return nil, err
@@ -317,7 +319,7 @@ func (p *parser) parseTags(tag string) (map[string]FieldTag, error) {
 	return fieldTags, nil
 }
 
-func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
+func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
 	var f Field
 	f.Name = v.Name()
 	f.NameLowerCamel = camelizeDown(f.Name)
@@ -340,7 +342,7 @@ func (p *parser) parseField(pkg *packages.Package, objectName string, v *types.V
 	return f, nil
 }
 
-func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldType, error) {
+func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldType, error) {
 	var ftype FieldType
 	pkgPath := pkg.PkgPath
 	resolver := func(other *types.Package) string {
@@ -396,7 +398,7 @@ func (p *parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 
 // addOutputFields adds built-in fields to the response objects
 // mentioned in p.outputObjects.
-func (p *parser) addOutputFields() error {
+func (p *Parser) addOutputFields() error {
 	errorField := Field{
 		OmitEmpty:      true,
 		Name:           "Error",
@@ -418,7 +420,7 @@ func (p *parser) addOutputFields() error {
 	return nil
 }
 
-func (p *parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {
+func (p *Parser) wrapErr(err error, pkg *packages.Package, pos token.Pos) error {
 	position := pkg.Fset.Position(pos)
 	return errors.Wrap(err, position.String())
 }
@@ -432,7 +434,7 @@ func isInSlice(slice []string, s string) bool {
 	return false
 }
 
-func (p *parser) lookupType(name string) *doc.Type {
+func (p *Parser) lookupType(name string) *doc.Type {
 	for i := range p.docs.Types {
 		if p.docs.Types[i].Name == name {
 			return p.docs.Types[i]
@@ -441,7 +443,7 @@ func (p *parser) lookupType(name string) *doc.Type {
 	return nil
 }
 
-func (p *parser) commentForType(name string) string {
+func (p *Parser) commentForType(name string) string {
 	typ := p.lookupType(name)
 	if typ == nil {
 		return ""
@@ -449,7 +451,7 @@ func (p *parser) commentForType(name string) string {
 	return cleanComment(typ.Doc)
 }
 
-func (p *parser) commentForMethod(service, method string) string {
+func (p *Parser) commentForMethod(service, method string) string {
 	typ := p.lookupType(service)
 	if typ == nil {
 		return ""
@@ -478,7 +480,7 @@ outer:
 	return cleanComment(m.Doc.Text())
 }
 
-func (p *parser) commentForField(typeName, field string) string {
+func (p *Parser) commentForField(typeName, field string) string {
 	typ := p.lookupType(typeName)
 	if typ == nil {
 		return ""

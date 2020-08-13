@@ -1,4 +1,4 @@
-package main
+package parser
 
 /*
 	from https://github.com/fatih/camelcase

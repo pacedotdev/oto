@@ -1,4 +1,4 @@
-package main
+package parser
 
 /*
 	from https://github.com/fatih/camelcase
@@ -7,6 +7,7 @@ package main
 */
 
 import (
+	"strings"
 	"unicode"
 	"unicode/utf8"
 )
@@ -92,3 +93,35 @@ func Split(src string) (entries []string) {
 	}
 	return
 }
+
+// camelizeDown converts a name or other string into a camel case
+// version with the first letter lowercase. "ModelID" becomes "modelID".
+func camelizeDown(word string) string {
+	if isAcronym(word) {
+		// entire word is an acronym
+		return strings.ToLower(word)
+	}
+	words := Split(word)
+	for i := range words {
+		if isAcronym(words[i]) {
+			if i == 0 {
+				words[i] = strings.ToLower(words[i])
+			} else {
+				words[i] = strings.ToUpper(words[i])
+			}
+		}
+	}
+	word = strings.Join(words, "")
+	return strings.ToLower(word[:1]) + word[1:]
+}
+
+func isAcronym(word string) bool {
+	for _, ac := range baseAcronyms {
+		if strings.ToUpper(ac) == strings.ToUpper(word) {
+			return true
+		}
+	}
+	return false
+}
+
+var baseAcronyms = strings.Split(`HTML,JSON,JWT,ID,UUID,SQL,ACK,ACL,ADSL,AES,ANSI,API,ARP,ATM,BGP,BSS,CAT,CCITT,CHAP,CIDR,CIR,CLI,CPE,CPU,CRC,CRT,CSMA,CMOS,DCE,DEC,DES,DHCP,DNS,DRAM,DSL,DSLAM,DTE,DMI,EHA,EIA,EIGRP,EOF,ESS,FCC,FCS,FDDI,FTP,GBIC,gbps,GEPOF,HDLC,HTTP,HTTPS,IANA,ICMP,IDF,IDS,IEEE,IETF,IMAP,IP,IPS,ISDN,ISP,kbps,LACP,LAN,LAPB,LAPF,LLC,MAC,MAN,Mbps,MC,MDF,MIB,MoCA,MPLS,MTU,NAC,NAT,NBMA,NIC,NRZ,NRZI,NVRAM,OSI,OSPF,OUI,PAP,PAT,PC,PIM,PIM,PCM,PDU,POP3,POP,POTS,PPP,PPTP,PTT,PVST,RADIUS,RAM,RARP,RFC,RIP,RLL,ROM,RSTP,RTP,RCP,SDLC,SFD,SFP,SLARP,SLIP,SMTP,SNA,SNAP,SNMP,SOF,SRAM,SSH,SSID,STP,SYN,TDM,TFTP,TIA,TOFU,UDP,URL,URI,USB,UTP,VC,VLAN,VLSM,VPN,W3C,WAN,WEP,WiFi,WPA,WWW`, ",")

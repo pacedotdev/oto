@@ -1,15 +1,16 @@
-package main
+package render
 
 import (
 	"strings"
 	"testing"
 
 	"github.com/matryer/is"
+	"github.com/pacedotdev/oto/parser"
 )
 
 func TestRender(t *testing.T) {
 	is := is.New(t)
-	def := Definition{
+	def := parser.Definition{
 		PackageName: "services",
 	}
 	params := map[string]interface{}{
@@ -17,7 +18,7 @@ func TestRender(t *testing.T) {
 	}
 	template := `// <%= params["Description"] %>
 package <%= def.PackageName %>`
-	s, err := render(template, def, params)
+	s, err := Render(template, def, params)
 	is.NoErr(err)
 	for _, should := range []string{
 		"// Package services contains services.",

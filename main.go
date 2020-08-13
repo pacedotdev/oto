@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/pacedotdev/oto/parser"
+	"github.com/pacedotdev/oto/render"
 	"github.com/pkg/errors"
 )
 
@@ -48,16 +50,16 @@ flags:`)
 		flags.PrintDefaults()
 		return errors.Wrap(err, "params")
 	}
-	parser := newParser(flags.Args()...)
+	p := parser.New(flags.Args()...)
 	ignoreItems := strings.Split(*ignoreList, ",")
 	if ignoreItems[0] != "" {
-		parser.ExcludeInterfaces = ignoreItems
+		p.ExcludeInterfaces = ignoreItems
 	}
-	parser.Verbose = *v
-	if parser.Verbose {
+	p.Verbose = *v
+	if p.Verbose {
 		fmt.Println("oto - github.com/pacedotdev/oto")
 	}
-	def, err := parser.parse()
+	def, err := p.Parse()
 	if err != nil {
 		return err
 	}
@@ -68,7 +70,7 @@ flags:`)
 	if err != nil {
 		return err
 	}
-	out, err := render(string(b), def, params)
+	out, err := render.Render(string(b), def, params)
 	if err != nil {
 		return err
 	}
@@ -84,7 +86,7 @@ flags:`)
 	if _, err := io.WriteString(w, out); err != nil {
 		return err
 	}
-	if parser.Verbose {
+	if p.Verbose {
 		var methodsCount int
 		for i := range def.Services {
 			methodsCount += len(def.Services[i].Methods)

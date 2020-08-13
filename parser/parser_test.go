@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"testing"
@@ -9,9 +9,9 @@ import (
 func TestParse(t *testing.T) {
 	is := is.New(t)
 	patterns := []string{"./testdata/services/pleasantries"}
-	parser := newParser(patterns...)
+	parser := New(patterns...)
 	parser.ExcludeInterfaces = []string{"Ignorer"}
-	def, err := parser.parse()
+	def, err := parser.Parse()
 	is.NoErr(err)
 
 	is.Equal(def.PackageName, "pleasantries")
@@ -76,7 +76,7 @@ You will love it.`)
 	is.Equal(len(greetOutputObject.Fields), 2)
 	is.Equal(greetOutputObject.Fields[0].Name, "Greetings")
 	is.Equal(greetOutputObject.Fields[0].NameLowerCamel, "greetings")
-	is.Equal(greetOutputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/testdata/services/pleasantries.Greeting")
+	is.Equal(greetOutputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/parser/testdata/services/pleasantries.Greeting")
 	is.Equal(greetOutputObject.Fields[0].OmitEmpty, false)
 	is.Equal(greetOutputObject.Fields[0].Type.TypeName, "Greeting")
 	is.Equal(greetOutputObject.Fields[0].Type.Multiple, true)
