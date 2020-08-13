@@ -179,5 +179,6 @@ The example is extracted and made available via the `Field.Example` field.
 Special thank you to:
 
 * @mgutz - for struct tag support
+* @sethcenterbar - for comment metadata support
 
 ![A PACE. project](pace-footer.png)
