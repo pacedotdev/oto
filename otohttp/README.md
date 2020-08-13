@@ -1,3 +1,3 @@
 # `otohttp`
 
-Pacakge for rolling Oto services as a JSON/HTTP RPC API.
+Package for rolling Oto services as a JSON/HTTP RPC API.
