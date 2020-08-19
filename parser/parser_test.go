@@ -168,7 +168,8 @@ You will love it.`)
 func TestExtractCommentMetadata(t *testing.T) {
 	is := is.New(t)
 
-	metadata, comment, err := extractCommentMetadata(`
+	p := &Parser{}
+	metadata, comment, err := p.extractCommentMetadata(`
 		This is a comment
 		example: "With an example"
 		required: true
