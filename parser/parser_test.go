@@ -173,6 +173,7 @@ func TestExtractCommentMetadata(t *testing.T) {
 		example: "With an example"
 		required: true
 		monkey: 24
+		Kind is one of: monthly, weekly, tags-monthly, tags-weekly
 	`)
 	is.NoErr(err)
 	is.Equal(comment, "This is a comment")

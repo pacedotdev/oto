@@ -215,7 +215,7 @@ func (p *Parser) parseService(pkg *packages.Package, obj types.Object, interface
 	s.Name = obj.Name()
 	s.Comment = p.commentForType(s.Name)
 	var err error
-	s.Metadata, s.Comment, err = extractCommentMetadata(s.Comment)
+	s.Metadata, s.Comment, err = p.extractCommentMetadata(s.Comment)
 	if err != nil {
 		return s, p.wrapErr(errors.New("extract comment metadata"), pkg, obj.Pos())
 	}
@@ -240,7 +240,7 @@ func (p *Parser) parseMethod(pkg *packages.Package, serviceName string, methodTy
 	m.NameLowerCamel = camelizeDown(m.Name)
 	m.Comment = p.commentForMethod(serviceName, m.Name)
 	var err error
-	m.Metadata, m.Comment, err = extractCommentMetadata(m.Comment)
+	m.Metadata, m.Comment, err = p.extractCommentMetadata(m.Comment)
 	if err != nil {
 		return m, p.wrapErr(errors.New("extract comment metadata"), pkg, methodType.Pos())
 	}
@@ -271,7 +271,7 @@ func (p *Parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	obj.Name = o.Name()
 	obj.Comment = p.commentForType(obj.Name)
 	var err error
-	obj.Metadata, obj.Comment, err = extractCommentMetadata(obj.Comment)
+	obj.Metadata, obj.Comment, err = p.extractCommentMetadata(obj.Comment)
 	if err != nil {
 		return p.wrapErr(errors.New("extract comment metadata"), pkg, o.Pos())
 	}
@@ -329,7 +329,7 @@ func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.V
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
 	var err error
-	f.Metadata, f.Comment, err = extractCommentMetadata(f.Comment)
+	f.Metadata, f.Comment, err = p.extractCommentMetadata(f.Comment)
 	if err != nil {
 		return f, p.wrapErr(errors.New("extract comment metadata"), pkg, v.Pos())
 	}
@@ -522,7 +522,7 @@ var metadataCommentRegex = regexp.MustCompile(`^.*:.*`)
 // It returns a map of metadata, and the
 // remaining comment string.
 // Metadata fields should succeed the comment string.
-func extractCommentMetadata(comment string) (map[string]interface{}, string, error) {
+func (p *Parser) extractCommentMetadata(comment string) (map[string]interface{}, string, error) {
 	var lines []string
 	var metadata = make(map[string]interface{})
 	s := bufio.NewScanner(strings.NewReader(comment))
@@ -540,7 +540,10 @@ func extractCommentMetadata(comment string) (map[string]interface{}, string, err
 			value := strings.TrimSpace(splitLine[1])
 			var val interface{}
 			if err := json.Unmarshal([]byte(value), &val); err != nil {
-				return nil, "", err
+				if p.Verbose {
+					fmt.Printf("(skipping) failed to marshal JSON value (%s): %s", err, value)
+				}
+				continue
 			}
 			metadata[key] = val
 			continue
