@@ -2,6 +2,8 @@ module github.com/pacedotdev/oto
 
 go 1.13
 
+replace github.com/pacedotdev/oto/parser => ./parser
+
 require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/structtag v1.2.0
@@ -15,8 +17,9 @@ require (
 	github.com/markbates/inflect v1.0.4
 	github.com/matryer/is v1.4.0
 	github.com/microcosm-cc/bluemonday v1.0.3 // indirect
+	github.com/pacedotdev/oto/parser v0.0.0-00010101000000-000000000000
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.6.0 // indirect
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381 // indirect
-	golang.org/x/tools v0.0.0-20200714190737-9048b464a08d
+	golang.org/x/tools v0.0.0-20200820180210-c8f393745106
 )
