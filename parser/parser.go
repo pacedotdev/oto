@@ -146,7 +146,7 @@ func New(patterns ...string) *Parser {
 // Parse parses the files specified, returning the definition.
 func (p *Parser) Parse() (Definition, error) {
 	cfg := &packages.Config{
-		Mode:  packages.NeedTypes | packages.NeedDeps | packages.NeedName | packages.NeedSyntax,
+		Mode:  packages.NeedTypes | packages.NeedName | packages.NeedTypesInfo | packages.NeedDeps | packages.NeedName | packages.NeedSyntax,
 		Tests: false,
 	}
 	pkgs, err := packages.Load(cfg, p.patterns...)
@@ -161,7 +161,6 @@ func (p *Parser) Parse() (Definition, error) {
 		if err != nil {
 			panic(err)
 		}
-
 		p.def.PackageName = pkg.Name
 		scope := pkg.Types.Scope()
 		for _, name := range scope.Names() {
@@ -541,7 +540,7 @@ func (p *Parser) extractCommentMetadata(comment string) (map[string]interface{},
 			var val interface{}
 			if err := json.Unmarshal([]byte(value), &val); err != nil {
 				if p.Verbose {
-					fmt.Printf("(skipping) failed to marshal JSON value (%s): %s", err, value)
+					fmt.Printf("(skipping) failed to marshal JSON value (%s): %s\n", err, value)
 				}
 				continue
 			}
