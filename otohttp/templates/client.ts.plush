@@ -67,7 +67,7 @@ export class Client {
 		}
 	}
 <%= for (field) in object.Fields { %>
-	<%= format_comment_text(field.Comment) %>	<%= field.NameLowerCamel %>: <%= if (field.Type.IsObject) { %><%= field.Type.TypeName %><% } else { %><%= field.Type.JSType() %><% } %><%= if (field.Type.Multiple) { %>[]<% } %>;
+	<%= format_comment_text(field.Comment) %>	<%= field.NameLowerCamel %>: <%= if (field.Type.IsObject) { %><%= field.Type.TypeName %><% } else { %><%= field.Type.JSType %><% } %><%= if (field.Type.Multiple) { %>[]<% } %>;
 <% } %>
 }
 <% } %>
