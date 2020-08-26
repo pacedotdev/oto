@@ -13,7 +13,7 @@ export class Client {
 	public basepath: String = '/oto/'
 	// headers allows calling code to mutate the HTTP
 	// headers of the underlying HTTP requests.
-	public headers: HeadersFunc
+	public headers?: HeadersFunc
 }
 
 <%= for (service) in def.Services { %>
@@ -27,7 +27,9 @@ export class Client {
 		const headers: HeadersInit = new Headers();
 		headers.set('Accept', 'application/json');
 		headers.set('Content-Type', 'application/json');
-		await this.client.headers(headers);
+                if (this.client.headers) {
+		        await this.client.headers(headers);
+                }
 		const response = await fetch(this.client.basepath + '<%= service.Name %>.<%= method.Name %>', {
 			method: 'POST',
 			headers: headers,
