@@ -52,13 +52,13 @@ export class Client {
 			<%= if (field.Type.IsObject) { %>
 				<%= if (field.Type.Multiple) { %>
 					if (data.<%= field.NameLowerCamel %>) {
-						this.<%= field.NameLowerCamel %> = new Array<<%= field.Type.ObjectName() %>>()
+						this.<%= field.NameLowerCamel %> = new Array<<%= field.Type.ObjectName %>>()
 						for (let i = 0; i < data.<%= field.NameLowerCamel %>.length; i++) {
-							this.<%= field.NameLowerCamel %>.push(new <%= field.Type.ObjectName() %>(data.<%= field.NameLowerCamel %>[i]));
+							this.<%= field.NameLowerCamel %>.push(new <%= field.Type.ObjectName %>(data.<%= field.NameLowerCamel %>[i]));
 						}
 					}
 				<% } else { %>
-					this.<%= field.NameLowerCamel %> = new <%= field.Type.ObjectName() %>(data.<%= field.NameLowerCamel %>);
+					this.<%= field.NameLowerCamel %> = new <%= field.Type.ObjectName %>(data.<%= field.NameLowerCamel %>);
 				<% } %>
 			<% } else { %>
 			this.<%= field.NameLowerCamel %> = data.<%= field.NameLowerCamel %>;
