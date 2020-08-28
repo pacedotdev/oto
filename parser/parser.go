@@ -515,7 +515,7 @@ func cleanComment(s string) string {
 
 // metadataCommentRegex is the regex to pull key value metadata
 // used since we can't simply trust lines that contain a colon
-var metadataCommentRegex = regexp.MustCompile(`^.*:.*`)
+var metadataCommentRegex = regexp.MustCompile(`^.*: .*`)
 
 // extractCommentMetadata extracts key value pairs from the comment.
 // It returns a map of metadata, and the
