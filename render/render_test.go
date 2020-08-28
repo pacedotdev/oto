@@ -67,3 +67,10 @@ func TestFormatTags(t *testing.T) {
 	is.Equal(trimBackticks(string(tagStr)), `json:"field,omitempty" monkey:"true"`)
 
 }
+
+func TestFormatCommentText(t *testing.T) {
+	is := is.New(t)
+
+	actual := strings.TrimSpace(formatCommentText("card's"))
+	is.Equal(actual, "// card's")
+}

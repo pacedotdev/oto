@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"bytes"
+	"go/doc"
+	"strings"
 	"testing"
 
 	"github.com/matryer/is"
@@ -10,6 +13,7 @@ func TestParse(t *testing.T) {
 	is := is.New(t)
 	patterns := []string{"./testdata/services/pleasantries"}
 	parser := New(patterns...)
+	parser.Verbose = testing.Verbose()
 	parser.ExcludeInterfaces = []string{"Ignorer"}
 	def, err := parser.Parse()
 	is.NoErr(err)
@@ -42,6 +46,16 @@ You will love it.`)
 	is.Equal(def.Services[0].Methods[1].OutputObject.TypeName, "GreetResponse")
 	is.Equal(def.Services[0].Methods[1].OutputObject.Multiple, false)
 	is.Equal(def.Services[0].Methods[1].OutputObject.Package, "")
+
+	formatCommentText := func(s string) string {
+		var buf bytes.Buffer
+		doc.ToText(&buf, s, "// ", "", 80)
+		return buf.String()
+	}
+	greetResponseObject, err := def.Object(def.Services[0].Methods[1].OutputObject.TypeName)
+	is.NoErr(err)
+	actualComment := strings.TrimSpace(formatCommentText(greetResponseObject.Comment))
+	is.Equal(actualComment, `// GreetResponse is the response object containing a person's greeting.`)
 
 	greetInputObject, err := def.Object(def.Services[0].Methods[0].InputObject.TypeName)
 	is.NoErr(err)
@@ -170,6 +184,7 @@ func TestExtractCommentMetadata(t *testing.T) {
 	is := is.New(t)
 
 	p := &Parser{}
+	p.Verbose = testing.Verbose()
 	metadata, comment, err := p.extractCommentMetadata(`
 		This is a comment
 		example: "With an example"

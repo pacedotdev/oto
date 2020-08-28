@@ -23,9 +23,10 @@ type GreetRequest struct {
 	Names []string
 }
 
-// GreetResponse is the response object for GreeterService.Greet.
+// GreetResponse is the response object containing a
+// person's greeting.
 type GreetResponse struct {
-	// Greeting is the generated Greeting.
+	// Greeting is the greeted person's Greeting.
 	Greeting Greeting
 }
 
