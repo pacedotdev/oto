@@ -534,7 +534,7 @@ func (p *Parser) extractCommentMetadata(comment string) (map[string]interface{},
 			}
 			// SplitN is being used to ensure that colons can exist
 			// in values by only splitting on the first colon in the line
-			splitLine := strings.SplitN(line, ":", 2)
+			splitLine := strings.SplitN(line, ": ", 2)
 			key := splitLine[0]
 			value := strings.TrimSpace(splitLine[1])
 			var val interface{}
