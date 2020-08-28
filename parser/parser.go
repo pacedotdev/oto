@@ -531,7 +531,7 @@ func (p *Parser) extractCommentMetadata(comment string) (map[string]interface{},
 		if metadataCommentRegex.MatchString(line) {
 			line = strings.TrimSpace(line)
 			if line == "" {
-				return nil, strings.Join(lines, "\n"), nil
+				return metadata, strings.Join(lines, "\n"), nil
 			}
 			// SplitN is being used to ensure that colons can exist
 			// in values by only splitting on the first colon in the line

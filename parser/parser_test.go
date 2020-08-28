@@ -146,6 +146,7 @@ You will love it.`)
 	is.Equal(welcomeOutputObject.Fields[1].Type.TypeName, "string")
 	is.Equal(welcomeOutputObject.Fields[1].Type.Multiple, false)
 	is.Equal(welcomeOutputObject.Fields[1].Type.Package, "")
+	is.True(welcomeOutputObject.Metadata != nil)
 
 	is.Equal(len(def.Objects), 8)
 	for i := range def.Objects {
