@@ -325,6 +325,7 @@ func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.V
 	f.Name = v.Name()
 	f.NameLowerCamel = camelizeDown(f.Name)
 	f.Comment = p.commentForField(objectName, f.Name)
+	f.Metadata = map[string]interface{}{}
 	if !v.Exported() {
 		return f, p.wrapErr(errors.New(f.Name+" must be exported"), pkg, v.Pos())
 	}
@@ -409,6 +410,7 @@ func (p *Parser) addOutputFields() error {
 			TypeName: "string",
 			JSType:   "string",
 		},
+		Metadata: map[string]interface{}{},
 	}
 	for typeName := range p.outputObjects {
 		obj, err := p.def.Object(typeName)
