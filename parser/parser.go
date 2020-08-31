@@ -287,6 +287,7 @@ func (p *Parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 		return p.wrapErr(errors.New(obj.Name+" must be a struct"), pkg, o.Pos())
 	}
 	obj.TypeID = o.Pkg().Path() + "." + obj.Name
+	obj.Fields = []Field{}
 	for i := 0; i < st.NumFields(); i++ {
 		field, err := p.parseField(pkg, obj.Name, st.Field(i))
 		if err != nil {
