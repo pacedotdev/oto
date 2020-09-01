@@ -411,6 +411,7 @@ func (p *Parser) addOutputFields() error {
 			JSType:   "string",
 		},
 		Metadata: map[string]interface{}{},
+		Example:  "something went wrong",
 	}
 	for typeName := range p.outputObjects {
 		obj, err := p.def.Object(typeName)
