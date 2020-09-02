@@ -404,6 +404,7 @@ func (p *Parser) addOutputFields() error {
 	errorField := Field{
 		OmitEmpty:      true,
 		Name:           "Error",
+		Example:        "",
 		NameLowerCamel: "error",
 		Comment:        "Error is string explaining what went wrong. Empty if everything was fine.",
 		Type: FieldType{
