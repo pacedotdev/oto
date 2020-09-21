@@ -61,10 +61,6 @@ func New<%= service.Name %>(client *Client) *<%= service.Name %> {
 	if err != nil {
 		return nil, errors.Wrap(err, "<%= service.Name %>.<%= method.Name %>: marshal <%= method.InputObject.TypeName %>")
 	}
-	signature, err := generateSignature(requestBodyBytes, s.client.secret)
-	if err != nil {
-		return nil, errors.Wrap(err, "<%= service.Name %>.<%= method.Name %>: generate signature <%= method.InputObject.TypeName %>")
-	}
 	url := s.client.RemoteHost + "<%= service.Name %>.<%= method.Name %>"
 	s.client.Debug(fmt.Sprintf("POST %s", url))
 	s.client.Debug(fmt.Sprintf(">> %s", string(requestBodyBytes)))
