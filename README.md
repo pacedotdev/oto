@@ -63,15 +63,15 @@ Use the `oto` tool to generate a client and server:
 ```bash
 mkdir generated
 oto -template ./templates/server.go.plush \
-    -out ./oto.gen.go \
+    -out ./generated/oto.gen.go \
     -ignore Ignorer \
     -pkg generated \
-    ./definition
+    ./definitions
 gofmt -w ./oto.gen.go ./oto.gen.go
 oto -template ./templates/client.js.plush \
-    -out ./oto.gen.js \
+    -out ./generated/oto.gen.js \
     -ignore Ignorer \
-    ./definition
+    ./definitions
 ```
 
 - Run `oto -help` for more information about these flags
