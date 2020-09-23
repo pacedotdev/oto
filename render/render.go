@@ -40,10 +40,10 @@ func toJSONHelper(v interface{}) (template.HTML, error) {
 	return template.HTML(b), nil
 }
 
-func formatCommentText(s string) string {
+func formatCommentText(s string) template.HTML {
 	var buf bytes.Buffer
 	doc.ToText(&buf, s, "// ", "", 80)
-	return buf.String()
+	return template.HTML(buf.String())
 }
 
 func formatCommentHTML(s string) template.HTML {

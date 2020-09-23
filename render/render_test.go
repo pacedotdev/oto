@@ -1,6 +1,7 @@
 package render
 
 import (
+	"log"
 	"strings"
 	"testing"
 
@@ -23,6 +24,36 @@ package <%= def.PackageName %>`
 	for _, should := range []string{
 		"// Package services contains services.",
 		"package services",
+	} {
+		if !strings.Contains(s, should) {
+			t.Errorf("missing: %s", should)
+			is.Fail()
+		}
+	}
+}
+
+// TestRenderCommentsWithQuotes addresses https://github.com/pacedotdev/oto/issues/17.
+func TestRenderCommentsWithQuotes(t *testing.T) {
+	is := is.New(t)
+	def := parser.Definition{
+		PackageName: "services",
+		Services: []parser.Service{
+			{
+				Comment: `This comment contains "quotes"`,
+				Name:    "MyService",
+			},
+		},
+	}
+	template := `
+		<%= for (service) in def.Services { %>
+			<%= format_comment_text(service.Comment) %>type <%= service.Name %> struct
+		<% } %>
+	`
+	s, err := Render(template, def, nil)
+	is.NoErr(err)
+	log.Println(s)
+	for _, should := range []string{
+		`// This comment contains "quotes"`,
 	} {
 		if !strings.Contains(s, should) {
 			t.Errorf("missing: %s", should)
@@ -71,6 +102,10 @@ func TestFormatTags(t *testing.T) {
 func TestFormatCommentText(t *testing.T) {
 	is := is.New(t)
 
-	actual := strings.TrimSpace(formatCommentText("card's"))
+	actual := strings.TrimSpace(string(formatCommentText("card's")))
 	is.Equal(actual, "// card's")
+
+	actual = strings.TrimSpace(string(formatCommentText(`What happens if I use "quotes"?`)))
+	is.Equal(actual, `// What happens if I use "quotes"?`)
+
 }
