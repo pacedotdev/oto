@@ -10,17 +10,17 @@ import Foundation
 let client = OtoClient(withEndpoint: "http://localhost:8080/oto")
 let service = MyService(withClient: client)
 
-let resp = service.doSomething(request: DoSomethingRequest(
+service.doSomething(withRequest: DoSomethingRequest(
     name: "Mat"
-))
-print(resp.greeting)
+)) { (response, err) -> () in
+    print("done")
+}
 
 class OtoClient {
     var endpoint: String
     init(withEndpoint url: String) {
         self.endpoint = url
     }
-    
 }
 
 class MyService {
@@ -28,18 +28,45 @@ class MyService {
     init(withClient client: OtoClient) {
         self.client = client
     }
-    func doSomething(request: DoSomethingRequest) -> DoSomethingResponse {
-        let resp = DoSomethingResponse(
-            greeting: "Hi \(request.name)"
-        )
-        return resp
+    func doSomething(withRequest doSomethingRequest: DoSomethingRequest, completion: (_ response: DoSomethingResponse?, _ error: Error?) -> ()) {
+        //var request = URLRequest(url: URL(string: "\(self.client.endpoint)/MyService/MyMethod")!)
+        // https://jsonplaceholder.typicode.com/todos/1
+        var request = URLRequest(url: URL(string: "https://jsonplaceholder.typicode.com/todos/1")!)
+        
+        request.httpMethod = "POST"
+        request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+        request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
+        var jsonData: Data
+        do {
+            jsonData = try JSONEncoder().encode(doSomethingRequest)
+        } catch let jsonEncodeErr {
+            print("TODO: handle JSON encode error: \(jsonEncodeErr)")
+            return
+        }
+        request.httpBody = jsonData
+        let session = URLSession(configuration: URLSessionConfiguration.default)
+        let task = session.dataTask(with: request) { (data, response, error) in
+            if let err = error {
+                print("TODO: handle response error: \(err)")
+                return
+            }
+            var doSomethingResponse: DoSomethingResponse
+            do {
+                doSomethingResponse = try JSONDecoder().decode(DoSomethingResponse.self, from: data!)
+            } catch let err {
+                print("TODO: handle JSON decode error: \(err)")
+                return
+            }
+            print("\(doSomethingResponse)")
+        }
+        task.resume()
     }
 }
 
-struct DoSomethingRequest {
+struct DoSomethingRequest: Encodable {
     var name: String = ""
 }
 
-struct DoSomethingResponse {
+struct DoSomethingResponse: Decodable {
     var greeting: String = ""
 }
