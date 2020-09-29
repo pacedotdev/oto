@@ -114,6 +114,7 @@ type FieldType struct {
 	Package              string `json:"package"`
 	IsObject             bool   `json:"isObject"`
 	JSType               string `json:"jsType"`
+	SwiftType            string `json:"swiftType"`
 }
 
 // Parser parses Oto Go definition packages.
@@ -378,20 +379,26 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
 	if ftype.IsObject {
 		ftype.JSType = "object"
+		ftype.SwiftType = "Any"
 	} else {
 		switch ftype.TypeName {
 		case "interface{}":
 			ftype.JSType = "any"
+			ftype.SwiftType = "Any"
 		case "map[string]interface{}":
 			ftype.JSType = "object"
+			ftype.SwiftType = "Any"
 		case "string":
 			ftype.JSType = "string"
+			ftype.SwiftType = "String"
 		case "bool":
 			ftype.JSType = "boolean"
+			ftype.SwiftType = "Bool"
 		case "int", "int16", "int32", "int64",
 			"uint", "uint16", "uint32", "uint64",
 			"float32", "float64":
 			ftype.JSType = "number"
+			ftype.SwiftType = "Double"
 		}
 	}
 
@@ -407,8 +414,9 @@ func (p *Parser) addOutputFields() error {
 		NameLowerCamel: "error",
 		Comment:        "Error is string explaining what went wrong. Empty if everything was fine.",
 		Type: FieldType{
-			TypeName: "string",
-			JSType:   "string",
+			TypeName:  "string",
+			JSType:    "string",
+			SwiftType: "String",
 		},
 		Metadata: map[string]interface{}{},
 		Example:  "something went wrong",
