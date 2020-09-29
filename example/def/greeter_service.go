@@ -2,6 +2,7 @@ package def
 
 // GreeterService is a polite API for greeting people.
 type GreeterService interface {
+	// Greet prepares a lovely greeting.
 	Greet(GreetRequest) GreetResponse
 }
 

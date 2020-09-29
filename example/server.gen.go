@@ -53,8 +53,7 @@ type GreetRequest struct {
 	Name string `json:"name"`
 }
 
-// GreetResponse is the response object containing a
-// person's greeting.
+// GreetResponse is the response object containing a person's greeting.
 type GreetResponse struct {
 	// Greeting is a nice message welcoming somebody.
 	Greeting string `json:"greeting"`
