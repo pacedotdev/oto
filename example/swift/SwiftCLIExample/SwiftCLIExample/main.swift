@@ -20,5 +20,4 @@ greeterService.greet(withRequest: GreetRequest(
     print(response!.greeting!)
 }
 
-print("hi")
 sleep(1)
