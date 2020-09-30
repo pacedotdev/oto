@@ -50,6 +50,13 @@ class OtoClient {
 				completion(nil, err)
 				return
 			}
+            if let serviceErr = <%= camelize_down(method.OutputObject.TypeName) %>.error {
+                if (serviceErr != "") {
+                    let err = OtoError(serviceErr)
+                        completion(nil, err)
+                        return
+                }
+            }
 			completion(<%= camelize_down(method.OutputObject.TypeName) %>, nil)
 		}
 		task.resume()

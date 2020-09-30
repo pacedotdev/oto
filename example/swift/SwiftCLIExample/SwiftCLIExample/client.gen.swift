@@ -52,6 +52,13 @@ class GreeterService {
 				completion(nil, err)
 				return
 			}
+            if let serviceErr = greetResponse.error {
+                if (serviceErr != "") {
+                    let err = OtoError(serviceErr)
+                        completion(nil, err)
+                        return
+                }
+            }
 			completion(greetResponse, nil)
 		}
 		task.resume()
