@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/pacedotdev/oto/otohttp"
@@ -12,6 +11,8 @@ import (
 
 // GreeterService is a polite API for greeting people.
 type GreeterService interface {
+
+	// Greet prepares a lovely greeting.
 	Greet(context.Context, GreetRequest) (*GreetResponse, error)
 }
 
@@ -37,8 +38,7 @@ func (s *greeterServiceServer) handleGreet(w http.ResponseWriter, r *http.Reques
 	}
 	response, err := s.greeterService.Greet(r.Context(), request)
 	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.server.OnErr(w, r, err)
 		return
 	}
 	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
