@@ -19,7 +19,8 @@ class GreeterService {
 
 	// Greet prepares a lovely greeting.
 	func greet(withRequest greetRequest: GreetRequest, completion: @escaping (_ response: GreetResponse?, _ error: Error?) -> ()) {
-		var request = URLRequest(url: URL(string: "\(self.client.endpoint)/GreeterService.Greet")!)
+		let url = "\(self.client.endpoint)/GreeterService.Greet"
+		var request = URLRequest(url: URL(string: url)!)
 		request.httpMethod = "POST"
 		request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
 		request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
@@ -37,6 +38,13 @@ class GreeterService {
 				completion(nil, err)
 				return
 			}
+            if let httpResponse = response as? HTTPURLResponse {
+                if (httpResponse.statusCode != 200) {
+                    let err = OtoError("\(url): \(httpResponse.statusCode) status code")
+                    completion(nil, err)
+                    return
+                }
+            }
 			var greetResponse: GreetResponse
 			do {
 				greetResponse = try JSONDecoder().decode(GreetResponse.self, from: data!)
@@ -72,3 +80,17 @@ struct GreetResponse: Encodable, Decodable {
 
 }
 
+
+struct OtoError : LocalizedError
+{
+    var errorDescription: String? { return message }
+    var failureReason: String? { return message }
+    var recoverySuggestion: String? { return "There is likely something wrong on the server." }
+    var helpAnchor: String? { return "" }
+
+    private var message : String
+
+    init(_ description: String) {
+        message = description
+    }
+}
