@@ -43,8 +43,7 @@ func (s *<%= camelize_down(service.Name) %>Server) handle<%= method.Name %>(w ht
 	}
 	response, err := s.<%= camelize_down(service.Name) %>.<%= method.Name %>(r.Context(), request)
 	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		s.server.OnErr(w, r, err)
 		return
 	}
 	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
