@@ -88,7 +88,7 @@ struct GreetResponse: Encodable, Decodable {
 }
 
 
-struct OtoError : LocalizedError
+struct OtoError: LocalizedError
 {
     var errorDescription: String? { return message }
     var failureReason: String? { return message }
