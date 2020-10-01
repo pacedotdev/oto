@@ -92,7 +92,7 @@ struct OtoError : LocalizedError
 {
     var errorDescription: String? { return message }
     var failureReason: String? { return message }
-    var recoverySuggestion: String? { return "There is likely something wrong on the server." }
+    var recoverySuggestion: String? { return "" }
     var helpAnchor: String? { return "" }
 
     private var message : String
