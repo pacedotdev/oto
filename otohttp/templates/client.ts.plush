@@ -35,6 +35,9 @@ export class Client {
 			headers: headers,
 			body: JSON.stringify(<%= camelize_down(method.InputObject.TypeName) %>),
 		})
+		if (response.status !== 200) {
+			throw new Error(`<%= service.Name %>.<%= method.Name %>: ${response.status} ${response.statusText}`);
+		}
 		return response.json().then((json) => {
 			if (json.error) {
 				throw new Error(json.error);
