@@ -14,6 +14,14 @@ These templates are already being used in production.
 * There are some [official Oto templates](https://github.com/pacedotdev/oto/tree/master/otohttp/templates)
 * The [Pace CLI tool](https://github.com/pacedotdev/pace/blob/master/oto/cli.go.plush) is generated from an open-source CLI template
 
+## Learn
+
+![](oto-video-preview.jpg)
+
+* VIDEO: [Mat Ryer gives an overview of Oto at the Belfast Gophers meetup](https://www.youtube.com/watch?feature=youtu.be&v=DUg4ZITwMys)
+
+* BLOG: [How code generation wrote our API and CLI](https://pace.dev/blog/2020/07/27/how-code-generation-wrote-our-api-and-cli.html)
+
 ## Tutorial
 
 Install the project:

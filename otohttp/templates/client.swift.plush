@@ -17,7 +17,8 @@ class OtoClient {
 	}
 <%= for (method) in service.Methods { %>
 	<%= format_comment_text(method.Comment) %>	func <%= camelize_down(method.Name) %>(withRequest <%= camelize_down(method.InputObject.TypeName) %>: <%= method.InputObject.TypeName %>, completion: @escaping (_ response: <%= method.OutputObject.TypeName %>?, _ error: Error?) -> ()) {
-		var request = URLRequest(url: URL(string: "\(self.client.endpoint)/<%= service.Name %>.<%= method.Name %>")!)
+		let url = "\(self.client.endpoint)/<%= service.Name %>.<%= method.Name %>"
+		var request = URLRequest(url: URL(string: url)!)
 		request.httpMethod = "POST"
 		request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
 		request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
@@ -35,6 +36,13 @@ class OtoClient {
 				completion(nil, err)
 				return
 			}
+            if let httpResponse = response as? HTTPURLResponse {
+                if (httpResponse.statusCode != 200) {
+                    let err = OtoError("\(url): \(httpResponse.statusCode) status code")
+                    completion(nil, err)
+                    return
+                }
+            }
 			var <%= camelize_down(method.OutputObject.TypeName) %>: <%= method.OutputObject.TypeName %>
 			do {
 				<%= camelize_down(method.OutputObject.TypeName) %> = try JSONDecoder().decode(<%= method.OutputObject.TypeName %>.self, from: data!)
@@ -57,3 +65,17 @@ class OtoClient {
 <% } %>
 }
 <% } %>
+
+struct OtoError: LocalizedError
+{
+    var errorDescription: String? { return message }
+    var failureReason: String? { return message }
+    var recoverySuggestion: String? { return "" }
+    var helpAnchor: String? { return "" }
+
+    private var message : String
+
+    init(_ description: String) {
+        message = description
+    }
+}
