@@ -19,7 +19,7 @@ func TestParse(t *testing.T) {
 	is.NoErr(err)
 
 	is.Equal(def.PackageName, "pleasantries")
-	is.Equal(len(def.Services), 2) // should be 2 services
+	is.Equal(len(def.Services), 3) // should be 3 services
 	is.Equal(def.Services[0].Name, "GreeterService")
 	is.Equal(def.Services[0].Metadata["strapline"], "A lovely greeter service") // custom metadata
 	is.Equal(def.Services[0].Comment, `GreeterService is a polite API.
@@ -102,17 +102,22 @@ You will love it.`)
 	is.Equal(greetOutputObject.Fields[1].Type.Multiple, false)
 	is.Equal(greetOutputObject.Fields[1].Type.Package, "")
 
-	is.Equal(def.Services[1].Name, "Welcomer")
-	is.Equal(len(def.Services[1].Methods), 1)
+	is.Equal(def.Services[1].Name, "StrangeTypesService")
+	strangeInputObj, err := def.Object(def.Services[1].Methods[0].InputObject.ObjectName)
+	is.NoErr(err)
+	is.Equal(strangeInputObj.Fields[0].Type.JSType, "any")
 
-	is.Equal(def.Services[1].Methods[0].InputObject.TypeName, "WelcomeRequest")
-	is.Equal(def.Services[1].Methods[0].InputObject.Multiple, false)
-	is.Equal(def.Services[1].Methods[0].InputObject.Package, "")
-	is.Equal(def.Services[1].Methods[0].OutputObject.TypeName, "WelcomeResponse")
-	is.Equal(def.Services[1].Methods[0].OutputObject.Multiple, false)
-	is.Equal(def.Services[1].Methods[0].OutputObject.Package, "")
+	is.Equal(def.Services[2].Name, "Welcomer")
+	is.Equal(len(def.Services[2].Methods), 1)
 
-	welcomeInputObject, err := def.Object(def.Services[1].Methods[0].InputObject.TypeName)
+	is.Equal(def.Services[2].Methods[0].InputObject.TypeName, "WelcomeRequest")
+	is.Equal(def.Services[2].Methods[0].InputObject.Multiple, false)
+	is.Equal(def.Services[2].Methods[0].InputObject.Package, "")
+	is.Equal(def.Services[2].Methods[0].OutputObject.TypeName, "WelcomeResponse")
+	is.Equal(def.Services[2].Methods[0].OutputObject.Multiple, false)
+	is.Equal(def.Services[2].Methods[0].OutputObject.Package, "")
+
+	welcomeInputObject, err := def.Object(def.Services[2].Methods[0].InputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(welcomeInputObject.Name, "WelcomeRequest")
 	is.Equal(len(welcomeInputObject.Fields), 4)
@@ -146,7 +151,7 @@ You will love it.`)
 	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "boolean")
 	is.Equal(welcomeInputObject.Fields[3].Type.SwiftType, "Bool")
 
-	welcomeOutputObject, err := def.Object(def.Services[1].Methods[0].OutputObject.TypeName)
+	welcomeOutputObject, err := def.Object(def.Services[2].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
 	is.Equal(welcomeOutputObject.Name, "WelcomeResponse")
 	is.Equal(len(welcomeOutputObject.Fields), 2)
@@ -167,7 +172,7 @@ You will love it.`)
 	is.Equal(welcomeOutputObject.Fields[1].Type.SwiftType, "String")
 	is.True(welcomeOutputObject.Metadata != nil)
 
-	is.Equal(len(def.Objects), 8)
+	is.Equal(len(def.Objects), 10)
 	for i := range def.Objects {
 		switch def.Objects[i].Name {
 		case "Greeting":
