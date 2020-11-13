@@ -61,7 +61,7 @@ class OtoClient {
 <%= for (object) in def.Objects { %>
 <%= format_comment_text(object.Comment) %>struct <%= object.Name %>: Encodable, Decodable {
 <%= for (field) in object.Fields { %>
-	<%= format_comment_text(field.Comment) %>	var <%= camelize_down(field.Name) %>: <%= field.Type.SwiftType %>?
+	<%= format_comment_text(field.Comment) %>	var <%= camelize_down(field.Name) %>: <%= if (field.Type.IsObject) { %><%= field.Type.TypeName %><% } else { %> <%= field.Type.SwiftType %><% } %>?
 <% } %>
 }
 <% } %>
