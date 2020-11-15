@@ -208,3 +208,18 @@ func TestExtractCommentMetadata(t *testing.T) {
 	is.Equal(metadata["required"], true)
 	is.Equal(metadata["monkey"], float64(24))
 }
+
+func TestObjectIsInputOutput(t *testing.T) {
+	is := is.New(t)
+	patterns := []string{"./testdata/services/pleasantries"}
+	parser := New(patterns...)
+	parser.Verbose = testing.Verbose()
+	parser.ExcludeInterfaces = []string{"Ignorer"}
+	def, err := parser.Parse()
+	is.NoErr(err)
+
+	is.Equal(def.ObjectIsInput("GreetRequest"), true)
+	is.Equal(def.ObjectIsInput("GreetResponse"), false)
+	is.Equal(def.ObjectIsOutput("GreetRequest"), false)
+	is.Equal(def.ObjectIsOutput("GreetResponse"), true)
+}

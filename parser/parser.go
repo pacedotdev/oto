@@ -45,6 +45,36 @@ func (d *Definition) Object(name string) (*Object, error) {
 	return nil, ErrNotFound
 }
 
+// ObjectIsInput gets whether this object is a method
+// input (request) type or not.\
+// Returns true if any method.InputObject.ObjectName matches
+// name.
+func (d *Definition) ObjectIsInput(name string) bool {
+	for _, service := range d.Services {
+		for _, method := range service.Methods {
+			if method.InputObject.ObjectName == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// ObjectIsOutput gets whether this object is a method
+// output (response) type or not.
+// Returns true if any method.OutputObject.ObjectName matches
+// name.
+func (d *Definition) ObjectIsOutput(name string) bool {
+	for _, service := range d.Services {
+		for _, method := range service.Methods {
+			if method.OutputObject.ObjectName == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Service describes a service, akin to an interface in Go.
 type Service struct {
 	Name    string   `json:"name"`
