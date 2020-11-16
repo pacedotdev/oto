@@ -7,6 +7,11 @@ Go driven rpc code generation tool for right now.
 - Generate server and client code
 - Production ready templates (or copy and modify)
 
+## Who's using Oto?
+
+* [Pace.dev](https://pace.dev/docs/) - Oto came out of the Pace project
+* [Firesearch.dev](https://firesearch.dev/docs/api) - Firesearch uses Oto to offer full-text services to the web, mobile, and the backend
+
 ## Templates
 
 These templates are already being used in production.
