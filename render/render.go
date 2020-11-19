@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"go/doc"
 	"html/template"
+	"strings"
 
 	"github.com/fatih/structtag"
 	"github.com/gobuffalo/plush"
@@ -22,7 +23,7 @@ func Render(template string, def parser.Definition, params map[string]interface{
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("json", toJSONHelper)
-	ctx.Set("format_comment", formatComment)
+	ctx.Set("format_comment_line", formatCommentLine)
 	ctx.Set("format_comment_text", formatCommentText)
 	ctx.Set("format_comment_html", formatCommentHTML)
 	ctx.Set("format_tags", formatTags)
@@ -41,10 +42,11 @@ func toJSONHelper(v interface{}) (template.HTML, error) {
 	return template.HTML(b), nil
 }
 
-func formatComment(s string, linePrefix string) template.HTML {
+func formatCommentLine(s string) template.HTML {
 	var buf bytes.Buffer
-	doc.ToText(&buf, s, linePrefix, linePrefix, 80)
-	return template.HTML(buf.String())
+	doc.ToText(&buf, s, "", "", 2000)
+	s = strings.TrimSpace(buf.String())
+	return template.HTML(s)
 }
 
 func formatCommentText(s string) template.HTML {
