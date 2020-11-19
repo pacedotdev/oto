@@ -22,6 +22,7 @@ func Render(template string, def parser.Definition, params map[string]interface{
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("json", toJSONHelper)
+	ctx.Set("formatComment", formatComment)
 	ctx.Set("format_comment_text", formatCommentText)
 	ctx.Set("format_comment_html", formatCommentHTML)
 	ctx.Set("format_tags", formatTags)
@@ -38,6 +39,12 @@ func toJSONHelper(v interface{}) (template.HTML, error) {
 		return "", err
 	}
 	return template.HTML(b), nil
+}
+
+func formatComment(s string, linePrefix string) template.HTML {
+	var buf bytes.Buffer
+	doc.ToText(&buf, s, linePrefix, linePrefix, 80)
+	return template.HTML(buf.String())
 }
 
 func formatCommentText(s string) template.HTML {
