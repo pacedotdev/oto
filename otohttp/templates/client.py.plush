@@ -11,8 +11,6 @@ class Client:
 		self.apiKey = apiKey
 		if self.endpoint == "":
 			raise FieldError(field="endpoint", message="endpoint missing")
-		if self.apiKey == "":
-			raise FieldError(field="apiKey", message="apiKey missing")
 
 <%= for (service) in def.Services { %>class <%= service.Name %>:
 	"""<%= format_comment_line(service.Comment) %>"""
@@ -20,7 +18,7 @@ class Client:
 	def __init__(self, client):
 		self.client = client
 	<%= for (method) in service.Methods { %>
-	def <%= method.NameLowerCamel %>(<%= method.InputObject.ObjectNameLowerCamel %>):
+	def <%= method.NameLowerCamel %>(self, <%= method.InputObject.ObjectNameLowerCamel %>):
 		"""<%= format_comment_line(method.Comment) %>"""
 		url = "{}/<%= service.Name %>.<%= method.Name %>".format(self.client.endpoint)
 		headers = {
@@ -32,30 +30,12 @@ class Client:
 		if r.status_code != 200:
 			raise OtoError(message="status code: {}".format(r.status_code))
 		j = r.json()
-		if j.error != "":
-			raise OtoError(message=j.error)
+		if 'error' in j:
+			err = j.get('error')
+			if err != '':
+				raise OtoError(message=err)
 		return j
 	<% } %>
-<% } %>
-
-<%= for (object) in def.Objects { %>
-class <%= object.Name %>:
-	"""<%= format_comment_line(object.Comment) %>
-	Attributes
-	----------
-	<%= for (field) in object.Fields {  %>
-	<%= field.NameLowerCamel %>
-		<%= format_comment_line(field.Comment) %>
-	<% } %>
-	"""
-
-	def __init__(self):
-		<%= for (field) in object.Fields { %>self.<%= field.NameLowerCamel %> = None
-		<% } %>	
-	def json():
-		""""get a JSON representation of this object"""
-		return json.dumps(self)
-
 <% } %>
 
 class Error(Exception):
