@@ -24,9 +24,9 @@ class Client:
 		"""<%= format_comment_line(method.Comment) %>"""
 		url = "{}/<%= service.Name %>.<%= method.Name %>".format(self.client.endpoint)
 		headers = {
-			'Accept': 		'application/json; charset=utf8',
+			'Accept': 'application/json; charset=utf8',
 			'Content-Type': 'application/json; charset=utf8',
-			'X-API-Key': 	self.client.apiKey,
+			'X-API-Key': self.client.apiKey,
 		}
 		r = requests.post(url, json=<%= method.InputObject.ObjectNameLowerCamel %>, headers=headers)
 		if r.status_code != 200:
@@ -54,7 +54,7 @@ class <%= object.Name %>:
 		<% } %>	
 	def json():
 		""""get a JSON representation of this object"""
-		return json.puts(self)
+		return json.dumps(self)
 
 <% } %>
 
