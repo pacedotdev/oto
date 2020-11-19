@@ -19,10 +19,13 @@
 # 4. Make real HTTP requests inside the methods, parsing all the
 #    JSON.
 
-import http.client
+import requests
 
 <%= for (service) in def.Services { %>
-// service: <%= service.Name %>
+class <%= service.Name %>:
+    '''<%= service.Comment %>'''
+    pass
+
     <%= for (method) in service.Methods { %>
 //     method: <%= method.Name %>
     <% } %>

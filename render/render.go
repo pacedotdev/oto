@@ -22,7 +22,7 @@ func Render(template string, def parser.Definition, params map[string]interface{
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("json", toJSONHelper)
-	ctx.Set("formatComment", formatComment)
+	ctx.Set("format_comment", formatComment)
 	ctx.Set("format_comment_text", formatCommentText)
 	ctx.Set("format_comment_html", formatCommentHTML)
 	ctx.Set("format_tags", formatTags)
