@@ -3,6 +3,7 @@
 import requests
 import json
 
+
 class Client:
 	"""Client provides access to the Greeter Service."""
 
@@ -11,20 +12,28 @@ class Client:
 		if self.endpoint == "":
 			raise FieldError(field="endpoint", message="endpoint missing")
 
+			
+<%= for (object) in def.Objects { %>class <%= object.Name %>:
+	"""<%= format_comment_line(object.Comment) %>"""
+
+	def __init__(self<%= for (field) in object.Fields { %>, <%=field.NameLowerCamel%>:<%= field.Type.PythonType%><% } %>) -> None:
+		<%= for (field) in object.Fields { %>self.<%=field.NameLowerCamel%> = <%=field.NameLowerCamel%>  
+		<% } %>
+<% } %>
 <%= for (service) in def.Services { %>class <%= service.Name %>:
 	"""<%= format_comment_line(service.Comment) %>"""
 
 	def __init__(self, client):
 		self.client = client
 	<%= for (method) in service.Methods { %>
-	def <%= method.NameLowerCamel %>(self, <%= method.InputObject.ObjectNameLowerCamel %>):
+	def <%= method.NameLowerCamel %>(self, <%= method.InputObject.ObjectName %>) -> <%=method.OutputObject.ObjectName%>:
 		"""<%= format_comment_line(method.Comment) %>"""
 		url = "{}/<%= service.Name %>.<%= method.Name %>".format(self.client.endpoint)
 		headers = {
 			'Accept': 'application/json; charset=utf8',
 			'Content-Type': 'application/json; charset=utf8'
 		}
-		r = requests.post(url, json=<%= method.InputObject.ObjectNameLowerCamel %>, headers=headers)
+		r = requests.post(url, json=<%= method.InputObject.ObjectName %>, headers=headers)
 		if r.status_code != 200:
 			raise OtoError(message="status code: {}".format(r.status_code))
 		j = r.json()
@@ -40,6 +49,7 @@ class Error(Exception):
 	"""Base class for exceptions in this module."""
 	pass
 
+
 class OtoError(Error):
 	"""Exception raised for an error making the request.
 
@@ -49,6 +59,7 @@ class OtoError(Error):
 
 	def __init__(self, message):
 		self.message = message
+
 
 class FieldError(Error):
 	"""Exception raised for missing fields.
