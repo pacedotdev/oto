@@ -112,15 +112,3 @@ func TestFormatCommentText(t *testing.T) {
 	is.Equal(actual, `// What about new lines?`)
 
 }
-
-func TestFormatComment(t *testing.T) {
-	is := is.New(t)
-
-	longComment := `This is a long comment that will end up spanning
-multiple lines so we get to test the indent string option
-in formatComment.`
-	actual := strings.TrimSpace(string(formatComment(longComment, "\t\t")))
-	is.Equal(actual, `This is a long comment that will end up spanning multiple lines so we get to
-		test the indent string option in formatComment.`)
-
-}
