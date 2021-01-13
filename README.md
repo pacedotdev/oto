@@ -80,7 +80,7 @@ oto -template ./templates/server.go.plush \
     -ignore Ignorer \
     -pkg generated \
     ./definitions
-gofmt -w ./oto.gen.go ./oto.gen.go
+gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go
 oto -template ./templates/client.js.plush \
     -out ./generated/oto.gen.js \
     -ignore Ignorer \
