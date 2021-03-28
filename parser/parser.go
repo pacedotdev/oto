@@ -407,11 +407,14 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.ObjectName = types.TypeString(typ, func(other *types.Package) string { return "" })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
+	typeWithoutPointer := strings.TrimPrefix(ftype.TypeName, "*")
+	ftype.JSType = typeWithoutPointer
+	ftype.SwiftType = typeWithoutPointer
 	if ftype.IsObject {
 		ftype.JSType = "object"
 		ftype.SwiftType = "Any"
 	} else {
-		switch ftype.TypeName {
+		switch typeWithoutPointer {
 		case "interface{}":
 			ftype.JSType = "any"
 			ftype.SwiftType = "Any"
