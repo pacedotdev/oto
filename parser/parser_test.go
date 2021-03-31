@@ -136,7 +136,7 @@ You will love it.`)
 	is.True(welcomeInputObject.Fields[0].Metadata != nil) // no metadata shouldn't be nil
 	is.Equal(welcomeInputObject.Fields[1].NameLowerCamel, "name")
 	is.Equal(welcomeInputObject.Fields[1].OmitEmpty, false)
-	is.Equal(welcomeInputObject.Fields[1].Type.TypeName, "string")
+	is.Equal(welcomeInputObject.Fields[1].Type.TypeName, "*string")
 	is.Equal(welcomeInputObject.Fields[1].Type.JSType, "string")
 	is.Equal(welcomeInputObject.Fields[1].Type.SwiftType, "String")
 	is.Equal(welcomeInputObject.Fields[1].Type.Multiple, false)
@@ -147,9 +147,10 @@ You will love it.`)
 	is.Equal(welcomeInputObject.Fields[2].Type.JSType, "number")
 	is.Equal(welcomeInputObject.Fields[2].Type.SwiftType, "Double")
 
-	is.Equal(welcomeInputObject.Fields[3].Example, true)
-	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "boolean")
-	is.Equal(welcomeInputObject.Fields[3].Type.SwiftType, "Bool")
+	is.Equal(welcomeInputObject.Fields[3].Type.TypeName, "*CustomerDetails")
+	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "CustomerDetails")
+	is.Equal(welcomeInputObject.Fields[3].Example, nil)
+	is.Equal(welcomeInputObject.Fields[3].Type.SwiftType, "CustomerDetails")
 
 	welcomeOutputObject, err := def.Object(def.Services[2].Methods[0].OutputObject.TypeName)
 	is.NoErr(err)
@@ -172,7 +173,7 @@ You will love it.`)
 	is.Equal(welcomeOutputObject.Fields[1].Type.SwiftType, "String")
 	is.True(welcomeOutputObject.Metadata != nil)
 
-	is.Equal(len(def.Objects), 10)
+	is.Equal(len(def.Objects), 11)
 	for i := range def.Objects {
 		switch def.Objects[i].Name {
 		case "Greeting":

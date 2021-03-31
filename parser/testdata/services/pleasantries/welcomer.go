@@ -14,14 +14,12 @@ type WelcomeRequest struct {
 	To string
 	// Name is the name of the person to welcome.
 	// example: "John Smith"
-	Name string
+	Name *string
 	// The number of times to send the message.
 	// example: 3
 	Times int
-	// NewCustomer indicates whether this is a new customer
-	// or not.
-	// example: true
-	NewCustomer bool
+	// CustomerDetails are the details about the customer.
+	CustomerDetails *CustomerDetails
 }
 
 // WelcomeResponse is the response object for Welcomer.Welcome.
@@ -29,4 +27,11 @@ type WelcomeResponse struct {
 	// Message is the welcome message.
 	// example: "Welcome John Smith."
 	Message string
+}
+
+type CustomerDetails struct {
+	// NewCustomer indicates whether this is a new customer
+	// or not.
+	// example: true
+	NewCustomer bool
 }
