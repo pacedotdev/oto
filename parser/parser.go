@@ -403,6 +403,11 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 			ftype.IsObject = true
 		}
 	}
+	// disallow nested structs
+	switch typ.(type) {
+	case *types.Struct:
+		return ftype, p.wrapErr(errors.New("nested structs not supported (create another type instead)"), pkg, obj.Pos())
+	}
 	ftype.TypeName = types.TypeString(typ, resolver)
 	ftype.ObjectName = types.TypeString(typ, func(other *types.Package) string { return "" })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)

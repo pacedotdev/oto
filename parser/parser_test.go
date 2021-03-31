@@ -223,3 +223,13 @@ func TestObjectIsInputOutput(t *testing.T) {
 	is.Equal(def.ObjectIsOutput("GreetRequest"), false)
 	is.Equal(def.ObjectIsOutput("GreetResponse"), true)
 }
+
+func TestParseNestedStructs(t *testing.T) {
+	is := is.New(t)
+	patterns := []string{"./testdata/nested-structs"}
+	p := New(patterns...)
+	p.Verbose = testing.Verbose()
+	_, err := p.Parse()
+	is.True(err != nil)
+	is.True(strings.Contains(err.Error(), "nested structs not supported"))
+}
