@@ -8,6 +8,7 @@ import (
 	"go/doc"
 	"go/token"
 	"go/types"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
@@ -320,7 +321,7 @@ func (p *Parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 	obj.TypeID = o.Pkg().Path() + "." + obj.Name
 	obj.Fields = []Field{}
 	for i := 0; i < st.NumFields(); i++ {
-		field, err := p.parseField(pkg, obj.Name, st.Field(i))
+		field, err := p.parseField(pkg, obj.Name, st.Field(i), st.Tag(i))
 		if err != nil {
 			return err
 		}
@@ -351,10 +352,18 @@ func (p *Parser) parseTags(tag string) (map[string]FieldTag, error) {
 	return fieldTags, nil
 }
 
-func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.Var) (Field, error) {
+func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.Var, tag string) (Field, error) {
 	var f Field
 	f.Name = v.Name()
 	f.NameLowerCamel = camelizeDown(f.Name)
+	// if it has a json tag, use that as the NameJSON.
+	if tag != "" {
+		fieldTag := reflect.StructTag(tag)
+		jsonTag := fieldTag.Get("json")
+		if jsonTag != "" {
+			f.NameLowerCamel = strings.Split(jsonTag, ",")[0]
+		}
+	}
 	f.Comment = p.commentForField(objectName, f.Name)
 	f.Metadata = map[string]interface{}{}
 	if !v.Exported() {

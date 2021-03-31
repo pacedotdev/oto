@@ -120,7 +120,7 @@ func New<%= service.Name %>(client *Client) *<%= service.Name %> {
 		<%= format_comment_text(object.Comment) %>type <%= object.Name %> struct {
 			<%= for (field) in object.Fields { %>
 				<%= if (field.Name != "Error") { %>
- 					<%= format_comment_text(field.Comment) %><%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %> `json:"<%= camelize_down(field.Name) %><%= if (field.OmitEmpty) { %>,omitempty<% } %>"`
+ 					<%= format_comment_text(field.Comment) %><%= field.Name %> <%= if (field.Type.Multiple == true) { %>[]<% } %><%= field.Type.TypeName %> `json:"<%= field.NameLowerCamel %><%= if (field.OmitEmpty) { %>,omitempty<% } %>"`
 				<% } %>
 			<% } %>
 		}

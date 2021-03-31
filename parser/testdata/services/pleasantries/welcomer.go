@@ -11,7 +11,7 @@ type WelcomeRequest struct {
 	// To is the address of the person to send the message to.
 	// example: "your@email.com"
 	// featured: true
-	To string
+	To string `json:"recipients"`
 	// Name is the name of the person to welcome.
 	// example: "John Smith"
 	Name *string
