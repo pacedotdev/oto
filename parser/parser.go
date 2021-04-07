@@ -435,7 +435,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 			"float32", "float64":
 			ftype.JSType = "number"
 			ftype.SwiftType = "Double"
-			ftype.PythonType = "int"
+			ftype.PythonType = "float"
 		}
 	}
 
