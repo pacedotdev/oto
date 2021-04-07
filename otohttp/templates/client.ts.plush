@@ -3,7 +3,7 @@
 // HeadersFunc allows you to mutate headers for each request.
 // Useful for adding authorization into the client.
 interface HeadersFunc {
-	(headers: HeadersInit);
+	(headers: Headers);
 }
 
 // Client provides access to remote services.
@@ -24,7 +24,7 @@ export class Client {
 		if (<%= camelize_down(method.InputObject.TypeName) %> == null) {
 			<%= camelize_down(method.InputObject.TypeName) %> = new <%= method.InputObject.TypeName %>();
 		}
-		const headers: HeadersInit = new Headers();
+		const headers: Headers = new Headers();
 		headers.set('Accept', 'application/json');
 		headers.set('Content-Type', 'application/json');
 		if (this.client.headers) {

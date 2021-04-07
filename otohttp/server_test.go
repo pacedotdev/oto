@@ -51,7 +51,7 @@ func TestEncode(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(w.Code, http.StatusOK)
 	is.Equal(w.Body.String(), `{"greeting":"Hi there"}`)
-	is.Equal(w.HeaderMap.Get("Content-Type"), "application/json; chatset=utf-8")
+	is.Equal(w.HeaderMap.Get("Content-Type"), "application/json; charset=utf-8")
 }
 
 func TestDecode(t *testing.T) {

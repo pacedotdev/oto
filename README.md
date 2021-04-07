@@ -80,7 +80,7 @@ oto -template ./templates/server.go.plush \
     -ignore Ignorer \
     -pkg generated \
     ./definitions
-gofmt -w ./oto.gen.go ./oto.gen.go
+gofmt -w ./generated/oto.gen.go ./generated/oto.gen.go
 oto -template ./templates/client.js.plush \
     -out ./generated/oto.gen.js \
     -ignore Ignorer \
@@ -136,6 +136,21 @@ greeterService
     .then(response => alert(response.greeting))
     .catch(e => alert(e));
 ```
+
+## Use `json` tags to control the front-end facing name
+
+You can control the name of the field in JSON and in front-end code using `json` tags:
+
+
+```go
+// Thing does something.
+type Thing struct {
+    SomeField string `json:"some_field"
+}
+```
+
+* The `SomeField` field will appear as `some_field` in json and front-end code
+* The name must be a valid JavaScript field name
 
 ## Specifying additional template data
 
