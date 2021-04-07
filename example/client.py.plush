@@ -14,10 +14,25 @@ class Client:
 
 			
 <%= for (object) in def.Objects { %>class <%= object.Name %>:
-	"""<%= format_comment_line(object.Comment) %>"""
+	"""
+	<%= format_comment_line(object.Comment) %>
+	
+	Attributes
+	----------
+	<%= for (field) in object.Fields { %><%=field.NameLowerCamel%> : <%= field.Type.PythonType %>
+		<%= format_comment_line(field.Comment) %>
+	<% } %>
+	"""
 
-	def __init__(self<%= for (field) in object.Fields { %>, <%=field.NameLowerCamel%>:<%= field.Type.PythonType%><% } %>) -> None:
-		<%= for (field) in object.Fields { %>self.<%=field.NameLowerCamel%> = <%=field.NameLowerCamel%>  
+	def __init__(self<%= for (field) in object.Fields { %>, <%= field.NameLowerCamel %>: <%= field.Type.PythonType %><% } %>) -> None:
+		"""
+		Constructs all of the neccesary attributes for the <%= object.Name %>
+		
+		<%= for (field) in object.Fields { %><%=field.NameLowerCamel%> : <%= field.Type.PythonType %>
+			<%= format_comment_line(field.Comment) %>
+		<% } %>
+		"""
+		<%= for (field) in object.Fields { %>self.<%= field.NameLowerCamel %> = <%= field.NameLowerCamel %>  
 		<% } %>
 <% } %>
 <%= for (service) in def.Services { %>class <%= service.Name %>:
@@ -26,8 +41,13 @@ class Client:
 	def __init__(self, client):
 		self.client = client
 	<%= for (method) in service.Methods { %>
-	def <%= method.NameLowerCamel %>(self, <%= method.InputObject.ObjectName %>) -> <%=method.OutputObject.ObjectName%>:
-		"""<%= format_comment_line(method.Comment) %>"""
+	def <%= method.NameLowerCamel %>(self, <%= method.InputObject.ObjectName %>: <%= method.InputObject.ObjectName %>) -> <%=method.OutputObject.ObjectName%>:
+		"""
+		<%= format_comment_line(method.Comment) %>
+
+		:param <%= method.InputObject.ObjectName %> <%= method.InputObject.ObjectName %>:
+		
+		"""
 		url = "{}/<%= service.Name %>.<%= method.Name %>".format(self.client.endpoint)
 		headers = {
 			'Accept': 'application/json; charset=utf8',

@@ -14,7 +14,7 @@ oto -template client.js.plush \
 echo "generated client.gen.js"
 
 oto -template client.py.plush \
-	-out clientgen.py \
+	-out ./python/clientgen.py \
 	-pkg main \
 	./def
 echo "generated client.gen.py"
