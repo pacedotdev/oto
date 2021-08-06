@@ -2,8 +2,6 @@ module github.com/pacedotdev/oto
 
 go 1.13
 
-replace github.com/pacedotdev/oto/parser => ./parser
-
 require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/structtag v1.2.0
