@@ -115,6 +115,27 @@ func camelizeDown(word string) string {
 	return strings.ToLower(word[:1]) + word[1:]
 }
 
+// camelizeUp converts a name or other string into a camel case
+// version with the first letter uppercase. "modelID" becomes "ModelID".
+func camelizeUp(word string) string {
+	if isAcronym(word) {
+		// entire word is an acronym
+		return strings.ToLower(word)
+	}
+	words := Split(word)
+	for i := range words {
+		if isAcronym(words[i]) {
+			if i == 0 {
+				words[i] = strings.ToLower(words[i])
+			} else {
+				words[i] = strings.ToUpper(words[i])
+			}
+		}
+	}
+	word = strings.Join(words, "")
+	return strings.ToUpper(word[:1]) + word[1:]
+}
+
 func isAcronym(word string) bool {
 	for _, ac := range baseAcronyms {
 		if strings.ToUpper(ac) == strings.ToUpper(word) {
