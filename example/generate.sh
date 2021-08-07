@@ -13,6 +13,12 @@ oto -template client.js.plush \
 	./def
 echo "generated client.gen.js"
 
+oto -template client.py.plush \
+	-out ./python/clientgen.py \
+	-pkg main \
+	./def
+echo "generated client.gen.py"
+
 oto -template client.swift.plush \
 	-out ./swift/SwiftCLIExample/SwiftCLIExample/client.gen.swift \
 	-pkg main \
