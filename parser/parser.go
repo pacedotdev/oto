@@ -232,8 +232,13 @@ func (p *Parser) Parse() (Definition, error) {
 		nonExcludedObjects = append(nonExcludedObjects, object)
 	}
 	p.def.Objects = nonExcludedObjects
+	// sort services
 	sort.Slice(p.def.Services, func(i, j int) bool {
 		return p.def.Services[i].Name < p.def.Services[j].Name
+	})
+	// sort objects
+	sort.Slice(p.def.Objects, func(i, j int) bool {
+		return p.def.Objects[i].Name < p.def.Objects[j].Name
 	})
 	if err := p.addOutputFields(); err != nil {
 		return p.def, err
