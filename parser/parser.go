@@ -145,6 +145,7 @@ type FieldType struct {
 	Package              string `json:"package"`
 	IsObject             bool   `json:"isObject"`
 	JSType               string `json:"jsType"`
+	TSType               string `json:"tsType"`
 	SwiftType            string `json:"swiftType"`
 }
 
@@ -435,6 +436,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
 	typeWithoutPointer := strings.TrimPrefix(ftype.TypeName, "*")
+	ftype.TSType = typeWithoutPointer
 	ftype.JSType = typeWithoutPointer
 	ftype.SwiftType = typeWithoutPointer
 	if ftype.IsObject {
@@ -445,20 +447,25 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 		case "interface{}":
 			ftype.JSType = "any"
 			ftype.SwiftType = "Any"
+			ftype.TSType = "object"
 		case "map[string]interface{}":
 			ftype.JSType = "object"
+			ftype.TSType = "object"
 			ftype.SwiftType = "Any"
 		case "string":
 			ftype.JSType = "string"
 			ftype.SwiftType = "String"
+			ftype.TSType = "string"
 		case "bool":
 			ftype.JSType = "boolean"
 			ftype.SwiftType = "Bool"
+			ftype.TSType = "boolean"
 		case "int", "int16", "int32", "int64",
 			"uint", "uint16", "uint32", "uint64",
 			"float32", "float64":
 			ftype.JSType = "number"
 			ftype.SwiftType = "Double"
+			ftype.TSType = "number"
 		}
 	}
 
@@ -477,6 +484,7 @@ func (p *Parser) addOutputFields() error {
 			TypeName:  "string",
 			JSType:    "string",
 			SwiftType: "String",
+			TSType:    "string",
 		},
 		Metadata: map[string]interface{}{},
 		Example:  "something went wrong",
