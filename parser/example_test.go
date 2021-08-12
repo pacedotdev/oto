@@ -54,10 +54,6 @@ func TestObjectExample(t *testing.T) {
 	is.NoErr(err)
 	is.True(example != nil)
 
-	// b, err := json.MarshalIndent(example, "", "\t")
-	// is.NoErr(err)
-	// fmt.Println(string(b))
-
 	is.Equal(example["name"], "Mat")
 	is.Equal(example["project"], "Respond")
 	is.Equal(example["sinceYear"], 2021)
@@ -67,5 +63,9 @@ func TestObjectExample(t *testing.T) {
 	languages, ok := favourites["languages"].([]interface{})
 	is.True(ok) // Languages []interface{}
 	is.Equal(len(languages), 3)
+
+	exampleJSON, err := def.ExampleJSON(obj1)
+	is.NoErr(err)
+	is.True(exampleJSON != "")
 
 }
