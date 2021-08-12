@@ -45,7 +45,13 @@ You will love it.`)
 	is.Equal(def.Services[0].Methods[1].InputObject.Package, "")
 	is.Equal(def.Services[0].Methods[1].OutputObject.TypeName, "GreetResponse")
 	is.Equal(def.Services[0].Methods[1].OutputObject.Multiple, false)
+	is.Equal(def.Services[0].Methods[1].OutputObject.IsObject, true)
 	is.Equal(def.Services[0].Methods[1].OutputObject.Package, "")
+
+	greetResponse, err := def.Object(def.Services[0].Methods[1].OutputObject.TypeName)
+	is.NoErr(err)
+	is.Equal(greetResponse.Fields[0].Name, "Greeting")
+	is.Equal(greetResponse.Fields[0].Type.IsObject, true)
 
 	formatCommentText := func(s string) string {
 		var buf bytes.Buffer
@@ -148,7 +154,7 @@ You will love it.`)
 	is.Equal(welcomeInputObject.Fields[2].Type.SwiftType, "Double")
 
 	is.Equal(welcomeInputObject.Fields[3].Type.TypeName, "*CustomerDetails")
-	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "CustomerDetails")
+	is.Equal(welcomeInputObject.Fields[3].Type.JSType, "object")
 	is.Equal(welcomeInputObject.Fields[3].Example, nil)
 	is.Equal(welcomeInputObject.Fields[3].Type.SwiftType, "CustomerDetails")
 

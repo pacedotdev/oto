@@ -404,10 +404,18 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 		}
 		return "" // no package prefix
 	}
+
 	typ := obj.Type()
 	if slice, ok := obj.Type().(*types.Slice); ok {
 		typ = slice.Elem()
 		ftype.Multiple = true
+	}
+	isPointer := true
+	originalTyp := typ
+	pointerType, isPointer := typ.(*types.Pointer)
+	if isPointer {
+		typ = pointerType.Elem()
+		isPointer = true
 	}
 	if named, ok := typ.(*types.Named); ok {
 		if structure, ok := named.Underlying().(*types.Struct); ok {
@@ -422,8 +430,8 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	case *types.Struct:
 		return ftype, p.wrapErr(errors.New("nested structs not supported (create another type instead)"), pkg, obj.Pos())
 	}
-	ftype.TypeName = types.TypeString(typ, resolver)
-	ftype.ObjectName = types.TypeString(typ, func(other *types.Package) string { return "" })
+	ftype.TypeName = types.TypeString(originalTyp, resolver)
+	ftype.ObjectName = types.TypeString(originalTyp, func(other *types.Package) string { return "" })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
 	typeWithoutPointer := strings.TrimPrefix(ftype.TypeName, "*")
@@ -431,7 +439,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.SwiftType = typeWithoutPointer
 	if ftype.IsObject {
 		ftype.JSType = "object"
-		ftype.SwiftType = "Any"
+		//ftype.SwiftType = "Any"
 	} else {
 		switch typeWithoutPointer {
 		case "interface{}":
