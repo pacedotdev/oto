@@ -1,6 +1,9 @@
 package parser
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"html/template"
+)
 
 // Example generates an object that is a realistic example
 // of this object.
@@ -18,24 +21,24 @@ func (d *Definition) Example(o Object) (map[string]interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			obj[field.Name] = example
+			obj[field.NameLowerCamel] = example
 			if field.Type.Multiple {
 				// turn it into an array
-				obj[field.Name] = []interface{}{obj[field.Name]}
+				obj[field.NameLowerCamel] = []interface{}{obj[field.NameLowerCamel]}
 			}
 			continue
 		}
-		obj[field.Name] = field.Example
+		obj[field.NameLowerCamel] = field.Example
 		if field.Type.Multiple {
 			// turn it into an array
-			obj[field.Name] = []interface{}{obj[field.Name], obj[field.Name], obj[field.Name]}
+			obj[field.NameLowerCamel] = []interface{}{obj[field.NameLowerCamel], obj[field.NameLowerCamel], obj[field.NameLowerCamel]}
 		}
 	}
 	return obj, nil
 }
 
 // ExampleJSON is like Example, but returns a JSON string.
-func (d *Definition) ExampleJSON(o Object) (string, error) {
+func (d *Definition) ExampleJSON(o Object) (template.HTML, error) {
 	example, err := d.Example(o)
 	if err != nil {
 		return "", err
@@ -44,5 +47,5 @@ func (d *Definition) ExampleJSON(o Object) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(exampleBytes), nil
+	return template.HTML(exampleBytes), nil
 }
