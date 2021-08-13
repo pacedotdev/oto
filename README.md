@@ -116,11 +116,14 @@ package main
 func main() {
     g := GreeterService{}
     server := otohttp.NewServer()
+    server.Basepath = "/oto/"
     generated.RegisterGreeterService(server, g)
-    http.Handle("/oto/", server)
+    http.Handle(server.Basepath, server)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 ```
+
+* The `otohttp.Server` performs its own routing and so has a `Basepath` field which you should use when you route the handler.
 
 Use the generated client to access the service in JavaScript:
 
