@@ -36,7 +36,7 @@ func Render(template string, def parser.Definition, params map[string]interface{
 }
 
 func toJSONHelper(v interface{}) (template.HTML, error) {
-	b, err := json.Marshal(v)
+	b, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
 		return "", err
 	}

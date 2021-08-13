@@ -137,9 +137,12 @@ type FieldTag struct {
 // FieldType holds information about the type of data that this
 // Field stores.
 type FieldType struct {
-	TypeID               string `json:"typeID"`
-	TypeName             string `json:"typeName"`
-	ObjectName           string `json:"objectName"`
+	TypeID     string `json:"typeID"`
+	TypeName   string `json:"typeName"`
+	ObjectName string `json:"objectName"`
+	// CleanObjectName is the ObjectName with * removed
+	// for pointer types.
+	CleanObjectName      string `json:"cleanObjectName"`
 	ObjectNameLowerCamel string `json:"objectNameLowerCamel"`
 	Multiple             bool   `json:"multiple"`
 	Package              string `json:"package"`
@@ -435,15 +438,15 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.ObjectName = types.TypeString(originalTyp, func(other *types.Package) string { return "" })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
-	typeWithoutPointer := strings.TrimPrefix(ftype.TypeName, "*")
-	ftype.TSType = typeWithoutPointer
-	ftype.JSType = typeWithoutPointer
-	ftype.SwiftType = typeWithoutPointer
+	ftype.CleanObjectName = strings.TrimPrefix(ftype.TypeName, "*")
+	ftype.TSType = ftype.CleanObjectName
+	ftype.JSType = ftype.CleanObjectName
+	ftype.SwiftType = ftype.CleanObjectName
 	if ftype.IsObject {
 		ftype.JSType = "object"
 		//ftype.SwiftType = "Any"
 	} else {
-		switch typeWithoutPointer {
+		switch ftype.CleanObjectName {
 		case "interface{}":
 			ftype.JSType = "any"
 			ftype.SwiftType = "Any"

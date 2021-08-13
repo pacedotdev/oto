@@ -1,9 +1,6 @@
 package parser
 
-import (
-	"encoding/json"
-	"html/template"
-)
+import "fmt"
 
 // Example generates an object that is a realistic example
 // of this object.
@@ -13,9 +10,9 @@ func (d *Definition) Example(o Object) (map[string]interface{}, error) {
 	obj := make(map[string]interface{})
 	for _, field := range o.Fields {
 		if field.Type.IsObject {
-			subobj, err := d.Object(field.Type.TypeName)
+			subobj, err := d.Object(field.Type.CleanObjectName)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("Object(%q): %w", field.Type.CleanObjectName, err)
 			}
 			example, err := d.Example(*subobj)
 			if err != nil {
@@ -35,17 +32,4 @@ func (d *Definition) Example(o Object) (map[string]interface{}, error) {
 		}
 	}
 	return obj, nil
-}
-
-// ExampleJSON is like Example, but returns a JSON string.
-func (d *Definition) ExampleJSON(o Object) (template.HTML, error) {
-	example, err := d.Example(o)
-	if err != nil {
-		return "", err
-	}
-	exampleBytes, err := json.MarshalIndent(example, "", "\t")
-	if err != nil {
-		return "", err
-	}
-	return template.HTML(exampleBytes), nil
 }
