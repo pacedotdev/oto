@@ -153,7 +153,7 @@ type FieldType struct {
 }
 
 // IsOptional returns true for pointer types (optional).
-func (f *FieldType) IsOptional() bool {
+func (f FieldType) IsOptional() bool {
 	return strings.HasPrefix(f.ObjectName, "*")
 }
 
