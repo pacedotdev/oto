@@ -152,6 +152,11 @@ type FieldType struct {
 	SwiftType            string `json:"swiftType"`
 }
 
+// IsOptional returns true for pointer types (optional).
+func (f *FieldType) IsOptional() bool {
+	return strings.HasPrefix(f.ObjectName, "*")
+}
+
 // Parser parses Oto Go definition packages.
 type Parser struct {
 	Verbose bool

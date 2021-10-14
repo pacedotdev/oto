@@ -203,6 +203,15 @@ You will love it.`)
 	// log.Println(string(b))
 }
 
+func TestFieldTypeIsOptional(t *testing.T) {
+	is := is.New(t)
+
+	f := FieldType{ObjectName: "*SomeType"}
+	is.Equal(f.IsOptional(), true)
+	f = FieldType{ObjectName: "SomeType"}
+	is.Equal(f.IsOptional(), false)
+}
+
 func TestExtractCommentMetadata(t *testing.T) {
 	is := is.New(t)
 

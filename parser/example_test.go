@@ -31,8 +31,9 @@ func TestObjectExample(t *testing.T) {
 				Name:           "Favourites",
 				NameLowerCamel: "favourites",
 				Type: FieldType{
-					TypeName: "obj2",
-					IsObject: true,
+					TypeName:        "obj2",
+					IsObject:        true,
+					CleanObjectName: "obj2",
 				},
 			},
 		},
@@ -41,7 +42,7 @@ func TestObjectExample(t *testing.T) {
 		Name: "obj2",
 		Fields: []Field{
 			{
-				Type:           FieldType{TypeName: "string", Multiple: true},
+				Type:           FieldType{TypeName: "string", Multiple: true, CleanObjectName: "string"},
 				NameLowerCamel: "languages",
 				Example:        "Go",
 			},
@@ -64,8 +65,8 @@ func TestObjectExample(t *testing.T) {
 	is.True(ok) // Languages []interface{}
 	is.Equal(len(languages), 3)
 
-	exampleJSON, err := def.ExampleJSON(obj1)
+	exampleJSON, err := def.Example(obj1)
 	is.NoErr(err)
-	is.True(exampleJSON != "")
+	is.Equal(len(exampleJSON), 4)
 
 }
