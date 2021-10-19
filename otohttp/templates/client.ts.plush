@@ -62,7 +62,7 @@ export class Client {
 					if (data.<%= field.NameLowerCamel %>) {
 						this.<%= field.NameLowerCamel %> = []
 						for (let i = 0; i < data.<%= field.NameLowerCamel %>.length; i++) {
-							this.<%= field.NameLowerCamel %>.push(new <%= field.Type.TSTyüe %>(data.<%= field.NameLowerCamel %>[i]));
+							this.<%= field.NameLowerCamel %>.push(new <%= field.Type.TSType %>(data.<%= field.NameLowerCamel %>[i]));
 						}
 					}
 				<% } else { %>
