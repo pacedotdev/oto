@@ -115,6 +115,23 @@ func camelizeDown(word string) string {
 	return strings.ToLower(word[:1]) + word[1:]
 }
 
+func camelizeUpField(s string) string {
+	var out []rune
+	newWord := false
+	for _, r := range s {
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			newWord = true
+			continue
+		}
+		if newWord {
+			r = unicode.ToUpper(r)
+			newWord = false
+		}
+		out = append(out, r)
+	}
+	return camelizeUp(string(out))
+}
+
 // camelizeUp converts a name or other string into a camel case
 // version with the first letter uppercase. "modelID" becomes "ModelID".
 func camelizeUp(word string) string {

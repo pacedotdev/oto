@@ -9,18 +9,16 @@ import (
 
 	"github.com/fatih/structtag"
 	"github.com/gobuffalo/plush"
-	"github.com/markbates/inflect"
 	"github.com/pacedotdev/oto/parser"
 	"github.com/pkg/errors"
 )
-
-var defaultRuleset = inflect.NewDefaultRuleset()
 
 // Render renders the template using the Definition.
 func Render(template string, def parser.Definition, params map[string]interface{}) (string, error) {
 	ctx := plush.NewContext()
 	ctx.Set("camelize_down", camelizeDown)
 	ctx.Set("camelize_up", camelizeUp)
+	ctx.Set("camelize_up_field", camelizeUpField)
 	ctx.Set("def", def)
 	ctx.Set("params", params)
 	ctx.Set("json", toJSONHelper)

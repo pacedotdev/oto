@@ -6,7 +6,12 @@ package render
 	Copyright (c) 2015 Fatih Arslan
 */
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+
+	"github.com/matryer/is"
+)
 
 func ExampleSplit() {
 
@@ -50,4 +55,11 @@ func ExampleSplit() {
 	// "BöseÜberraschung" => []string{"Böse", "Überraschung"}
 	// "Two  spaces" => []string{"Two", "  ", "spaces"}
 	// "BadUTF8\xe2\xe2\xa1" => []string{"BadUTF8\xe2\xe2\xa1"}
+}
+
+func TestCamelizeUpField(t *testing.T) {
+	is := is.New(t)
+
+	actual := camelizeUpField("string[apiKey:bits]")
+	is.Equal(actual, "StringAPIKeyBits")
 }
