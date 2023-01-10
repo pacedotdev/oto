@@ -9,23 +9,23 @@ Go driven rpc code generation tool for right now.
 
 ## Who's using Oto?
 
-* [Pace.dev](https://pace.dev/docs/) - Oto came out of the Pace project
-* [Firesearch.dev](https://firesearch.dev/docs/api) - Firesearch uses Oto to offer full-text services to the web, mobile, and the backend
+- [Pace.dev](https://pace.dev/docs/) - Oto came out of the Pace project
+- [Firesearch.dev](https://firesearch.dev/docs/api) - Firesearch uses Oto to offer full-text services to the web, mobile, and the backend
 
 ## Templates
 
 These templates are already being used in production.
 
-* There are some [official Oto templates](https://github.com/pacedotdev/oto/tree/master/otohttp/templates)
-* The [Pace CLI tool](https://github.com/pacedotdev/pace/blob/master/oto/cli.go.plush) is generated from an open-source CLI template
+- There are some [official Oto templates](https://github.com/pacedotdev/oto/tree/master/otohttp/templates)
+- The [Pace CLI tool](https://github.com/pacedotdev/pace/blob/master/oto/cli.go.plush) is generated from an open-source CLI template
 
 ## Learn
 
 ![](oto-video-preview.jpg)
 
-* VIDEO: [Mat Ryer gives an overview of Oto at the Belfast Gophers meetup](https://www.youtube.com/watch?feature=youtu.be&v=DUg4ZITwMys)
+- VIDEO: [Mat Ryer gives an overview of Oto at the Belfast Gophers meetup](https://www.youtube.com/watch?feature=youtu.be&v=DUg4ZITwMys)
 
-* BLOG: [How code generation wrote our API and CLI](https://pace.dev/blog/2020/07/27/how-code-generation-wrote-our-api-and-cli.html)
+- BLOG: [How code generation wrote our API and CLI](https://pace.dev/blog/2020/07/27/how-code-generation-wrote-our-api-and-cli.html)
 
 ## Tutorial
 
@@ -123,7 +123,7 @@ func main() {
 }
 ```
 
-* The `otohttp.Server` performs its own routing and so has a `Basepath` field which you should use when you route the handler.
+- The `otohttp.Server` performs its own routing and so has a `Basepath` field which you should use when you route the handler.
 
 Use the generated client to access the service in JavaScript:
 
@@ -133,17 +133,16 @@ import { GreeterService } from "oto.gen.js";
 const greeterService = new GreeterService();
 
 greeterService
-    .greet({
-        name: "Mat"
-    })
-    .then(response => alert(response.greeting))
-    .catch(e => alert(e));
+  .greet({
+    name: "Mat",
+  })
+  .then((response) => alert(response.greeting))
+  .catch((e) => alert(e));
 ```
 
 ## Use `json` tags to control the front-end facing name
 
 You can control the name of the field in JSON and in front-end code using `json` tags:
-
 
 ```go
 // Thing does something.
@@ -152,8 +151,8 @@ type Thing struct {
 }
 ```
 
-* The `SomeField` field will appear as `some_field` in json and front-end code
-* The name must be a valid JavaScript field name
+- The `SomeField` field will appear as `some_field` in json and front-end code
+- The name must be a valid JavaScript field name
 
 ## Specifying additional template data
 
@@ -184,7 +183,7 @@ type Thing struct {
 
 The `Metadata["field"]` value will be the string `value`.
 
-* The value must be valid JSON (for strings, use quotes)
+- The value must be valid JSON (for strings, use quotes)
 
 Examples are officially supported, but all data is available via the `Metadata` map fields.
 
@@ -202,15 +201,23 @@ type GreetRequest struct {
 }
 ```
 
-* The example must be valid JSON
+- The example must be valid JSON
 
 The example is extracted and made available via the `Field.Example` field.
+
+### Open API
+
+To work on the Open API spec, you might find this command helpful:
+
+```
+oto -template ./otohttp/templates/openapi.yaml.plush -out openapi.yaml -v -ignore Ignorer ./parser/testdata/services/pleasantries
+```
 
 ## Contributions
 
 Special thank you to:
 
-* @mgutz - for struct tag support
-* @sethcenterbar - for comment metadata support
+- @mgutz - for struct tag support
+- @sethcenterbar - for comment metadata support
 
 ![A PACE. project](pace-footer.png)

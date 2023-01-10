@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+	version: 0.1.0
+	title: Grafana Incident API (beta)
+	description: "Provides programatic access to the Grafana Incident service."
+
+servers:
+ - url: https://ops.grafana.net/api/1
+   description: API server
+
+paths:
+	/GreeterService.GetGreetings:
+		post:
+			summary: GetGreetings gets a range of saved Greetings.
+			requestBody:
+				required: true
+				"$ref": "#/components/schemas/GetGreetingsRequest"
+			responses:
+				'200':
+					"$ref": "#/components/schemas/GetGreetingsResponse"
+				'500':
+					"$ref": "#/components/schemas/ErrorResponse"
+	
+	/GreeterService.Greet:
+		post:
+			summary: Greet creates a Greeting for one or more people.
+			requestBody:
+				required: true
+				"$ref": "#/components/schemas/GreetRequest"
+			responses:
+				'200':
+					"$ref": "#/components/schemas/GreetResponse"
+				'500':
+					"$ref": "#/components/schemas/ErrorResponse"
+	
+	/StrangeTypesService.DoSomethingStrange:
+		post:
+			summary: 
+			requestBody:
+				required: true
+				"$ref": "#/components/schemas/DoSomethingStrangeRequest"
+			responses:
+				'200':
+					"$ref": "#/components/schemas/DoSomethingStrangeResponse"
+				'500':
+					"$ref": "#/components/schemas/ErrorResponse"
+	
+	/Welcomer.Welcome:
+		post:
+			summary: Welcome makes a welcome message for somebody.
+			requestBody:
+				required: true
+				"$ref": "#/components/schemas/WelcomeRequest"
+			responses:
+				'200':
+					"$ref": "#/components/schemas/WelcomeResponse"
+				'500':
+					"$ref": "#/components/schemas/ErrorResponse"
+	
+components:
+  schemas:
+		ErrorResponse:
+			type: object
+			description: If a request fails, the an ErrorResponse is returned, which contains an Error string explaining what happened.
+			properties:
+				error:
+					type string
+					description: A human readable description of what went wrong.
+	
+		CustomerDetails:
+			type: object
+			properties:
+				newCustomer:
+					type: boolean
+		DoSomethingStrangeRequest:
+			type: object
+			properties:
+				anything:
+					type: any
+		DoSomethingStrangeResponse:
+			type: object
+			properties:
+				value:
+					type: any
+				size:
+					type: number
+				error:
+					type: string
+		GetGreetingsRequest:
+			type: object
+			properties:
+				page:
+					"$ref": "#/components/schemas/services.Page"
+		GetGreetingsResponse:
+			type: object
+			properties:
+				greetings:
+					type: array
+					items:
+						type: object
+						"$ref": "#/components/schemas/Greeting"
+				error:
+					type: string
+		GreetRequest:
+			type: object
+			properties:
+				names:
+					type: array
+					items:
+						type: string
+		GreetResponse:
+			type: object
+			properties:
+				greeting:
+					"$ref": "#/components/schemas/Greeting"
+				error:
+					type: string
+		Greeting:
+			type: object
+			properties:
+				text:
+					type: string
+		Page:
+			type: object
+			properties:
+				cursor:
+					type: string
+				orderField:
+					type: string
+				orderAsc:
+					type: boolean
+		WelcomeRequest:
+			type: object
+			properties:
+				to:
+					type: string
+				name:
+					type: string
+				times:
+					type: number
+				customerDetails:
+					"$ref": "#/components/schemas/CustomerDetails"
+		WelcomeResponse:
+			type: object
+			properties:
+				message:
+					type: string
+				error:
+					type: string
