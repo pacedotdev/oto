@@ -443,7 +443,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.ObjectName = types.TypeString(originalTyp, func(other *types.Package) string { return "" })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
-	ftype.CleanObjectName = strings.TrimPrefix(ftype.TypeName, "*")
+	ftype.CleanObjectName = strings.TrimPrefix(ftype.ObjectName, "*")
 	ftype.TSType = ftype.CleanObjectName
 	ftype.JSType = ftype.CleanObjectName
 	ftype.SwiftType = ftype.CleanObjectName
