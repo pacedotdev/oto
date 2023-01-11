@@ -1,41 +1,52 @@
 openapi: 3.1.0
 info:
-	version: 0.1.0
-	title: Grafana Incident API (beta)
-	description: "Provides programatic access to the Grafana Incident service."
+  version: 0.1.0
+  title: Grafana Incident API (beta)
+  description: "Provides programatic access to the Grafana Incident service."
 
 servers:
  - url: https://ops.grafana.net/api/1
    description: API server
 
 paths:<%= for (service) in def.Services { %><%= for (method) in service.Methods { %>
-	/<%= service.Name %>.<%= method.Name %>:
-		post:
-			summary: <%= method.Comment %>
-			requestBody:
-				required: true
-				"$ref": "#/components/schemas/<%= method.InputObject.CleanObjectName %>"
-			responses:
-				'200':
-					"$ref": "#/components/schemas/<%= method.OutputObject.CleanObjectName %>"
-				'500':
-					"$ref": "#/components/schemas/ErrorResponse"
-	<% } %><% } %>
+  "/<%= service.Name %>.<%= method.Name %>":
+    post:
+      summary: "<%= method.Comment %>"
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              $ref: "#/components/schemas/<%= method.InputObject.CleanObjectName %>"
+      responses:
+        '200':
+          description: A 200, successful response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/<%= method.OutputObject.CleanObjectName %>"
+        '500':
+          description: A non-200 response means something went wrong.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  <% } %><% } %>
 components:
   schemas:
-		ErrorResponse:
-			type: object
-			description: If a request fails, the an ErrorResponse is returned, which contains an Error string explaining what happened.
-			properties:
-				error:
-					type string
-					description: A human readable description of what went wrong.
-	<%= for (object) in def.Objects { %>
-		<%= object.Name %>:
-			type: object
-			properties:<%= for (field) in object.Fields { %>
-				<%= camelize_down(field.Name) %>:
-					<%= if (field.Type.Multiple) { %>type: array
-					items:
-						type: <%= if (field.Type.IsObject) { %>object
-						"$ref": "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %><%= field.Type.JSType %><% } %><% } else { %><%= if (field.Type.IsObject) { %>"$ref": "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %>type: <%= field.Type.JSType %><% } %><% } %><% } %><% } %>
+    ErrorResponse:
+      type: object
+      description: If a request fails, the an ErrorResponse is returned, which contains an Error string explaining what happened.
+      properties:
+        error:
+          type: string
+          description: A human readable description of what went wrong.
+  <%= for (object) in def.Objects { %>
+    <%= object.Name %>:
+      type: object
+      properties:<%= for (field) in object.Fields { %>
+        <%= camelize_down(field.Name) %>:
+          <%= if (field.Type.Multiple) { %>type: array
+          items:
+            type: <%= if (field.Type.IsObject) { %>object
+            $ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %><%= field.Type.JSType %><% } %><% } else { %><%= if (field.Type.IsObject) { %>$ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %>type: <%= field.Type.JSType %><% } %><% } %><% } %><% } %>
