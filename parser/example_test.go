@@ -36,6 +36,15 @@ func TestObjectExample(t *testing.T) {
 					CleanObjectName: "obj2",
 				},
 			},
+			{
+				Name:           "Tags",
+				NameLowerCamel: "tags",
+				Type: FieldType{
+					Multiple: true,
+					TypeName: "string",
+				},
+				Example: []interface{}{"security", "customer-affected", "review-needed"},
+			},
 		},
 	}
 	obj2 := Object{
@@ -44,7 +53,7 @@ func TestObjectExample(t *testing.T) {
 			{
 				Type:           FieldType{TypeName: "string", Multiple: true, CleanObjectName: "string"},
 				NameLowerCamel: "languages",
-				Example:        "Go",
+				Example:        []interface{}{"Go"},
 			},
 		},
 	}
@@ -55,6 +64,11 @@ func TestObjectExample(t *testing.T) {
 	is.NoErr(err)
 	is.True(example != nil)
 
+	// check it out:
+	// b, err := json.MarshalIndent(example, "", "  ")
+	// is.NoErr(err)
+	// fmt.Println(string(b))
+
 	is.Equal(example["name"], "Mat")
 	is.Equal(example["project"], "Respond")
 	is.Equal(example["sinceYear"], 2021)
@@ -63,10 +77,13 @@ func TestObjectExample(t *testing.T) {
 	is.True(ok) // Favourites map[string]interface{}
 	languages, ok := favourites["languages"].([]interface{})
 	is.True(ok) // Languages []interface{}
-	is.Equal(len(languages), 3)
+	is.Equal(len(languages), 1)
 
 	exampleJSON, err := def.Example(obj1)
 	is.NoErr(err)
-	is.Equal(len(exampleJSON), 4)
+
+	is.Equal(len(exampleJSON), 5)
+	is.Equal(len(exampleJSON["tags"].([]interface{})), 3)
+	is.Equal(exampleJSON["tags"].([]interface{})[0], "security")
 
 }

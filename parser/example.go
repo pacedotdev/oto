@@ -19,17 +19,9 @@ func (d *Definition) Example(o Object) (map[string]interface{}, error) {
 				return nil, err
 			}
 			obj[field.NameLowerCamel] = example
-			if field.Type.Multiple {
-				// turn it into an array
-				obj[field.NameLowerCamel] = []interface{}{obj[field.NameLowerCamel]}
-			}
 			continue
 		}
 		obj[field.NameLowerCamel] = field.Example
-		if field.Type.Multiple {
-			// turn it into an array
-			obj[field.NameLowerCamel] = []interface{}{obj[field.NameLowerCamel], obj[field.NameLowerCamel], obj[field.NameLowerCamel]}
-		}
 	}
 	return obj, nil
 }

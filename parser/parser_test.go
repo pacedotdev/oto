@@ -53,6 +53,14 @@ You will love it.`)
 	is.Equal(greetResponse.Fields[0].Name, "Greeting")
 	is.Equal(greetResponse.Fields[0].Type.IsObject, true)
 
+	greetRequest, err := def.Object(def.Services[0].Methods[1].InputObject.TypeName)
+	is.NoErr(err)
+	is.Equal(len(greetRequest.Fields), 1)
+	is.Equal(greetRequest.Fields[0].Name, "Names")           // the "Names" field
+	is.Equal(greetRequest.Fields[0].Type.IsObject, false)    // IsObject
+	is.Equal(greetRequest.Fields[0].Type.Multiple, true)     // Multiple
+	is.Equal(greetRequest.Fields[0].Type.TypeName, "string") // TypeName
+
 	formatCommentText := func(s string) string {
 		var buf bytes.Buffer
 		doc.ToText(&buf, s, "// ", "", 80)
@@ -77,7 +85,7 @@ You will love it.`)
 	is.Equal(greetInputObject.Fields[0].Type.ObjectName, "Page")
 	is.Equal(greetInputObject.Fields[0].Type.ObjectNameLowerCamel, "page")
 	is.Equal(greetInputObject.Fields[0].Type.JSType, "object")
-	is.Equal(greetInputObject.Fields[0].Type.TSType, "services.Page")
+	is.Equal(greetInputObject.Fields[0].Type.TSType, "Page")
 	is.Equal(greetInputObject.Fields[0].Type.TypeID, "github.com/pacedotdev/oto/testdata/services.Page")
 	is.Equal(greetInputObject.Fields[0].Type.IsObject, true)
 	is.Equal(greetInputObject.Fields[0].Type.Multiple, false)
