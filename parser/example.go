@@ -18,7 +18,11 @@ func (d *Definition) Example(o Object) (map[string]interface{}, error) {
 			if err != nil {
 				return nil, err
 			}
-			obj[field.NameLowerCamel] = example
+			if field.Type.Multiple {
+				obj[field.NameLowerCamel] = []interface{}{example, example}
+			} else {
+				obj[field.NameLowerCamel] = example
+			}
 			continue
 		}
 		obj[field.NameLowerCamel] = field.Example

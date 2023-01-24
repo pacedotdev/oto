@@ -37,6 +37,16 @@ func TestObjectExample(t *testing.T) {
 				},
 			},
 			{
+				Name:           "SomeObject",
+				NameLowerCamel: "someObject",
+				Type: FieldType{
+					TypeName:        "obj3",
+					IsObject:        true,
+					CleanObjectName: "obj3",
+					Multiple:        false,
+				},
+			},
+			{
 				Name:           "Tags",
 				NameLowerCamel: "tags",
 				Type: FieldType{
@@ -57,8 +67,24 @@ func TestObjectExample(t *testing.T) {
 			},
 		},
 	}
+	obj3 := Object{
+		Name: "obj3",
+		Fields: []Field{
+			{
+				Name:           "Tags",
+				NameLowerCamel: "tags",
+				Example:        []interface{}{"one", "two", "three"},
+				Type: FieldType{
+					TypeName:        "obj2",
+					CleanObjectName: "obj2",
+					Multiple:        true,
+					IsObject:        true,
+				},
+			},
+		},
+	}
 	def := &Definition{
-		Objects: []Object{obj1, obj2},
+		Objects: []Object{obj1, obj2, obj3},
 	}
 	example, err := def.Example(obj1)
 	is.NoErr(err)
@@ -82,7 +108,7 @@ func TestObjectExample(t *testing.T) {
 	exampleJSON, err := def.Example(obj1)
 	is.NoErr(err)
 
-	is.Equal(len(exampleJSON), 5)
+	is.Equal(len(exampleJSON), 6)
 	is.Equal(len(exampleJSON["tags"].([]interface{})), 3)
 	is.Equal(exampleJSON["tags"].([]interface{})[0], "security")
 
