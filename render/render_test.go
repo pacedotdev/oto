@@ -112,3 +112,14 @@ func TestFormatCommentText(t *testing.T) {
 	is.Equal(actual, `// What about new lines?`)
 
 }
+
+func TestSmartPrefix(t *testing.T) {
+	is := is.New(t)
+
+	actual := smartPrefix("public", "*Object")
+	is.Equal(actual, "*publicObject")
+
+	actual = smartPrefix("public", "Object")
+	is.Equal(actual, "publicObject")
+
+}
