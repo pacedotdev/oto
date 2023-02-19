@@ -40,7 +40,8 @@ type GetGreetingsRequest struct {
 // GetGreetingsResponse is the respponse object for GreeterService.GetGreetings.
 // featured: false
 type GetGreetingsResponse struct {
-	Greetings []Greeting
+	Greetings      []Greeting `json:"greetings"`
+	GreetingsCount int        `json:"count,omitempty"`
 }
 
 // Greeting contains the pleasentry.

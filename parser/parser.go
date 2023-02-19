@@ -375,7 +375,13 @@ func (p *Parser) parseField(pkg *packages.Package, objectName string, v *types.V
 		fieldTag := reflect.StructTag(tag)
 		jsonTag := fieldTag.Get("json")
 		if jsonTag != "" {
-			f.NameLowerCamel = strings.Split(jsonTag, ",")[0]
+			jsonValues := strings.Split(jsonTag, ",")
+			f.NameLowerCamel = jsonValues[0]
+			for _, jv := range jsonValues[1:] {
+				if jv == "omitempty" {
+					f.OmitEmpty = true
+				}
+			}
 		}
 	}
 	f.Comment = p.commentForField(objectName, f.Name)
