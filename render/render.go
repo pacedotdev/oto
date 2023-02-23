@@ -27,6 +27,7 @@ func Render(template string, def parser.Definition, params map[string]interface{
 	ctx.Set("format_comment_html", formatCommentHTML)
 	ctx.Set("format_tags", formatTags)
 	ctx.Set("object_golang", ObjectGolang)
+	ctx.Set("smart_prefix", smartPrefix)
 	s, err := plush.Render(string(template), ctx)
 	if err != nil {
 		return "", err
@@ -80,4 +81,14 @@ func formatTags(tags ...string) (template.HTML, error) {
 	}
 	tagsStr = "`" + tagsStr + "`"
 	return template.HTML(tagsStr), nil
+}
+
+// smartPrefix prepends a string before s, allowing for the specific use
+// case of pointers to objects. If the s begins with * (as in, *Object), the
+// result will be *prefixObject to preserve its original meaning.
+func smartPrefix(prefix, s string) string {
+	if strings.HasPrefix(s, "*") {
+		return "*" + prefix + s[1:]
+	}
+	return prefix + s
 }
