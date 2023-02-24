@@ -62,6 +62,9 @@ flags:`)
 	if p.Verbose {
 		fmt.Println("oto - github.com/pacedotdev/oto", Version)
 	}
+	if *pkg != "" {
+		p.PackageName = *pkg
+	}
 	def, err := p.Parse()
 	if err != nil {
 		return err

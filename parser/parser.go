@@ -137,9 +137,10 @@ type FieldTag struct {
 // FieldType holds information about the type of data that this
 // Field stores.
 type FieldType struct {
-	TypeID     string `json:"typeID"`
-	TypeName   string `json:"typeName"`
-	ObjectName string `json:"objectName"`
+	TypeID             string `json:"typeID"`
+	TypeName           string `json:"typeName"`
+	ObjectName         string `json:"objectName"`
+	ExternalObjectName string `json:"externalObjectName"`
 	// CleanObjectName is the ObjectName with * removed
 	// for pointer types.
 	CleanObjectName      string `json:"cleanObjectName"`
@@ -162,6 +163,8 @@ type Parser struct {
 	Verbose bool
 
 	ExcludeInterfaces []string
+
+	PackageName string
 
 	patterns []string
 	def      Definition
@@ -441,6 +444,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	}
 	ftype.TypeName = types.TypeString(originalTyp, resolver)
 	ftype.ObjectName = types.TypeString(originalTyp, func(other *types.Package) string { return "" })
+	ftype.ExternalObjectName = types.TypeString(originalTyp, func(other *types.Package) string { return p.PackageName })
 	ftype.ObjectNameLowerCamel = camelizeDown(ftype.ObjectName)
 	ftype.TypeID = pkgPath + "." + ftype.ObjectName
 	ftype.CleanObjectName = strings.TrimPrefix(ftype.ObjectName, "*")

@@ -19,7 +19,7 @@ func TestExmapleGolang(t *testing.T) {
 	is.NoErr(err)
 	inputObject, err := def.Object(def.Services[0].Methods[0].InputObject.ObjectName)
 	is.NoErr(err) // get inputObject
-	example := ObjectGolang(def, *inputObject, 0)
+	example := ObjectGolang(def, nil, inputObject, 0)
 	err = os.WriteFile("./delete-me-example.go.notgo", []byte(example), 0666)
 	is.NoErr(err) // write file
 
@@ -27,7 +27,7 @@ func TestExmapleGolang(t *testing.T) {
 		"// Package services contains services.",
 		"package services",
 	} {
-		if !strings.Contains(example, should) {
+		if !strings.Contains(string(example), should) {
 			t.Errorf("missing: %s", should)
 			is.Fail()
 		}
