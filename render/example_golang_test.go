@@ -1,7 +1,7 @@
 package render
 
 import (
-	"os"
+	"log"
 	"strings"
 	"testing"
 
@@ -20,12 +20,14 @@ func TestExmapleGolang(t *testing.T) {
 	inputObject, err := def.Object(def.Services[0].Methods[0].InputObject.ObjectName)
 	is.NoErr(err) // get inputObject
 	example := ObjectGolang(def, nil, inputObject, 0)
-	err = os.WriteFile("./delete-me-example.go.notgo", []byte(example), 0666)
-	is.NoErr(err) // write file
+
+	// err = os.WriteFile("./delete-me-example.go.notgo", []byte(example), 0666)
+	// is.NoErr(err) // write file
+
+	log.Printf("### %s ###", example)
 
 	for _, should := range []string{
-		"// Package services contains services.",
-		"package services",
+		"OrderField: null",
 	} {
 		if !strings.Contains(string(example), should) {
 			t.Errorf("missing: %s", should)

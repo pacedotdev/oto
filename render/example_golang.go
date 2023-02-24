@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"log"
 	"strings"
 
 	"github.com/pacedotdev/oto/parser"
@@ -32,7 +31,6 @@ func ObjectGolang(def parser.Definition, parentField *parser.Field, object *pars
 			continue
 		}
 		// normal field
-		log.Printf("%+v", field)
 		fmt.Fprintf(s, "%s: %v,", field.Name, jsonStr(field.Metadata["example"]))
 	}
 	fmt.Fprintf(s, strings.Repeat("\t", tabs+1))
