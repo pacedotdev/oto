@@ -100,11 +100,13 @@ type Method struct {
 
 // Object describes a data structure that is part of this definition.
 type Object struct {
-	TypeID   string  `json:"typeID"`
-	Name     string  `json:"name"`
-	Imported bool    `json:"imported"`
-	Fields   []Field `json:"fields"`
-	Comment  string  `json:"comment"`
+	TypeID             string  `json:"typeID"`
+	ObjectName         string  `json:"objectName"`
+	ExternalObjectName string  `json:"externalObjectName"`
+	Name               string  `json:"name"`
+	Imported           bool    `json:"imported"`
+	Fields             []Field `json:"fields"`
+	Comment            string  `json:"comment"`
 	// Metadata are typed key/value pairs extracted from the
 	// comments.
 	Metadata map[string]interface{} `json:"metadata"`
@@ -336,6 +338,10 @@ func (p *Parser) parseObject(pkg *packages.Package, o types.Object, v *types.Str
 		return p.wrapErr(errors.New(obj.Name+" must be a struct"), pkg, o.Pos())
 	}
 	obj.TypeID = o.Pkg().Path() + "." + obj.Name
+
+	obj.ObjectName = types.TypeString(o.Type(), func(other *types.Package) string { return "" })
+	obj.ExternalObjectName = types.TypeString(o.Type(), func(other *types.Package) string { return p.PackageName })
+
 	obj.Fields = []Field{}
 	for i := 0; i < st.NumFields(); i++ {
 		field, err := p.parseField(pkg, obj.Name, st.Field(i), st.Tag(i))
