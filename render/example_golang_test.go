@@ -1,6 +1,7 @@
 package render
 
 import (
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -17,7 +18,7 @@ func TestExmapleGolang(t *testing.T) {
 	parser.ExcludeInterfaces = []string{"Ignorer"}
 	def, err := parser.Parse()
 	is.NoErr(err)
-	inputObject, err := def.Object(def.Services[0].Methods[0].InputObject.ObjectName)
+	inputObject, err := def.Object("GreetRequest")
 	is.NoErr(err) // get inputObject
 	example := ObjectGolang(def, inputObject, 0)
 
@@ -26,7 +27,7 @@ func TestExmapleGolang(t *testing.T) {
 	defer f.Close()
 	f.Write([]byte(example))
 
-	// log.Printf("### %s ###", example)
+	log.Printf("\n---\n %s \n---\n", example)
 
 	for _, should := range []string{
 		"GetGreetingsRequest{",

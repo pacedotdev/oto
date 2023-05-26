@@ -29,6 +29,7 @@ type GreetRequest struct {
 // Message is a note that can be included in a greeting.
 type Message struct {
 	// Text is the message.
+	// example: "Hello world"
 	Text string
 }
 

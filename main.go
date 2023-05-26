@@ -69,6 +69,7 @@ flags:`)
 	if err != nil {
 		return err
 	}
+	fmt.Println()
 	if *pkg != "" {
 		def.PackageName = *pkg
 	}
