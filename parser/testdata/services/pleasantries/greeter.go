@@ -21,6 +21,15 @@ type GreetRequest struct {
 	// Names are the names of the people to greet.
 	// example: ["Mat", "David"]
 	Names []string
+
+	// Messages are the messages to include.
+	Messages []Message
+}
+
+// Message is a note that can be included in a greeting.
+type Message struct {
+	// Text is the message.
+	Text string
 }
 
 // GreetResponse is the response object containing a
@@ -48,4 +57,6 @@ type Greeting struct {
 	// Text is the message.
 	// example: "Hello there"
 	Text string
+	// Messages are the messages to include.
+	Messages []Message
 }

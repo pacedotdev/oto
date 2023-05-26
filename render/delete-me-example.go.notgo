@@ -1,0 +1,7 @@
+GetGreetingsRequest{
+	Page: Page{
+		Cursor: null,
+		OrderField: null,
+		OrderAsc: null,
+	},
+}

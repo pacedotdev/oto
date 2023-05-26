@@ -55,7 +55,7 @@ You will love it.`)
 
 	greetRequest, err := def.Object(def.Services[0].Methods[1].InputObject.TypeName)
 	is.NoErr(err)
-	is.Equal(len(greetRequest.Fields), 1)
+	is.Equal(len(greetRequest.Fields), 2)
 	is.Equal(greetRequest.Fields[0].Name, "Names")           // the "Names" field
 	is.Equal(greetRequest.Fields[0].Type.IsObject, false)    // IsObject
 	is.Equal(greetRequest.Fields[0].Type.Multiple, true)     // Multiple
@@ -193,11 +193,11 @@ You will love it.`)
 	is.Equal(welcomeOutputObject.Fields[1].Type.SwiftType, "String")
 	is.True(welcomeOutputObject.Metadata != nil)
 
-	is.Equal(len(def.Objects), 11)
+	is.Equal(len(def.Objects), 12)
 	for i := range def.Objects {
 		switch def.Objects[i].Name {
 		case "Greeting":
-			is.Equal(len(def.Objects[i].Fields), 1)
+			is.Equal(len(def.Objects[i].Fields), 2)
 			is.Equal(def.Objects[i].Imported, false)
 		case "Page":
 			is.Equal(def.Objects[i].TypeID, "github.com/pacedotdev/oto/testdata/services.Page")

@@ -1,6 +1,7 @@
 package render
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -20,10 +21,10 @@ func TestExmapleGolang(t *testing.T) {
 	is.NoErr(err) // get inputObject
 	example := ObjectGolang(def, inputObject, 0)
 
-	// f, err := os.Create("./delete-me-example.go.notgo")
-	// is.NoErr(err) // write file
-	// defer f.Close()
-	// f.Write([]byte(example))
+	f, err := os.Create("./delete-me-example.go.notgo")
+	is.NoErr(err) // write file
+	defer f.Close()
+	f.Write([]byte(example))
 
 	// log.Printf("### %s ###", example)
 
