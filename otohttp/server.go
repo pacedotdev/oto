@@ -17,7 +17,7 @@ type Server struct {
 	// Basepath is the path prefix to match.
 	// Default: /oto/
 	Basepath string
-
+	// routes map handlers to the path.
 	routes map[string]http.Handler
 	// NotFound is the http.Handler to use when a resource is
 	// not found.
