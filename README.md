@@ -9,8 +9,9 @@ Go driven rpc code generation tool for right now.
 
 ## Who's using Oto?
 
-- [Pace.dev](https://pace.dev/docs/) - Oto came out of the Pace project
-- [Firesearch.dev](https://firesearch.dev/docs/api) - Firesearch uses Oto to offer full-text services to the web, mobile, and the backend
+- [Grafana Labs, IRM tool](https://grafana.com/docs/grafana-cloud/alerting-and-irm/incident/api/)
+- [Pace.dev](https://pace.dev/docs/)
+- [Firesearch.dev](https://firesearch.dev/docs/api)
 
 ## Templates
 
