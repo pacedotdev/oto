@@ -1,13 +1,11 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   version: 0.1.0
-  title: Grafana Incident API (beta)
-  description: "Provides programatic access to the Grafana Incident service."
-
+  title: Your Oto API
+  description: "Provides programatic access to your Oto services."
 servers:
- - url: https://ops.grafana.net/api/1
+ - url: https://somewhere.com/api/v1/
    description: API server
-
 paths:<%= for (service) in def.Services { %><%= for (method) in service.Methods { %>
   "/<%= service.Name %>.<%= method.Name %>":
     post:
@@ -44,9 +42,11 @@ components:
   <%= for (object) in def.Objects { %>
     <%= object.Name %>:
       type: object
-      properties:<%= for (field) in object.Fields { %>
+      properties: <%= if (len(object.Fields) == 0) { %>{}<% } else { %><%= for (field) in object.Fields { %>
         <%= camelize_down(field.Name) %>:
-          <%= if (field.Type.Multiple) { %>type: array
+          description: <%= json_inline(field.Comment) %>
+          <%= if (!field.Type.IsObject) { %>example: <%= json_inline(field.Example) %>
+          <% } %><%= if (field.Type.Multiple) { %>type: array
           items:
             type: <%= if (field.Type.IsObject) { %>object
-            $ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %><%= field.Type.JSType %><% } %><% } else { %><%= if (field.Type.IsObject) { %>$ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %>type: <%= field.Type.JSType %><% } %><% } %><% } %><% } %>
+            $ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %><%= field.Type.JSType %><% } %><% } else { %><%= if (field.Type.IsObject) { %>$ref: "#/components/schemas/<%= field.Type.CleanObjectName %>"<% } else { %>type: <%= field.Type.JSType %><% } %><% } %><% } %><% } %><% } %>
