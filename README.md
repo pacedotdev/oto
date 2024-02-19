@@ -206,7 +206,7 @@ type GreetRequest struct {
 
 The example is extracted and made available via the `Field.Example` field.
 
-### Open API
+### Open API
 
 To work on the Open API spec, you might find this command helpful:
 
