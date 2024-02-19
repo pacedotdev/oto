@@ -1,4 +1,4 @@
 .PHONY: release
 
 release:
-	goreleaser --rm-dist
+	goreleaser --clean
