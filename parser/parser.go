@@ -153,6 +153,7 @@ type FieldType struct {
 	JSType               string `json:"jsType"`
 	TSType               string `json:"tsType"`
 	SwiftType            string `json:"swiftType"`
+	DartType             string `json:"dartType"`
 }
 
 // IsOptional returns true for pointer types (optional).
@@ -457,6 +458,7 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 	ftype.TSType = ftype.CleanObjectName
 	ftype.JSType = ftype.CleanObjectName
 	ftype.SwiftType = ftype.CleanObjectName
+	ftype.DartType = ftype.CleanObjectName
 	if ftype.IsObject {
 		ftype.JSType = "object"
 		//ftype.SwiftType = "Any"
@@ -466,24 +468,29 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 			ftype.JSType = "any"
 			ftype.SwiftType = "Any"
 			ftype.TSType = "object"
+			ftype.DartType = "dynamic"
 		case "map[string]interface{}":
 			ftype.JSType = "object"
 			ftype.TSType = "object"
 			ftype.SwiftType = "Any"
+			ftype.DartType = "Map<String, dynamic>"
 		case "string":
 			ftype.JSType = "string"
 			ftype.SwiftType = "String"
 			ftype.TSType = "string"
+			ftype.DartType = "String"
 		case "bool":
 			ftype.JSType = "boolean"
 			ftype.SwiftType = "Bool"
 			ftype.TSType = "boolean"
+			ftype.DartType = "bool"
 		case "int", "int16", "int32", "int64",
 			"uint", "uint16", "uint32", "uint64",
 			"float32", "float64":
 			ftype.JSType = "number"
 			ftype.SwiftType = "Double"
 			ftype.TSType = "number"
+			ftype.DartType = "double"
 		}
 	}
 
@@ -503,6 +510,7 @@ func (p *Parser) addOutputFields() error {
 			JSType:    "string",
 			SwiftType: "String",
 			TSType:    "string",
+			DartType:  "String",
 		},
 		Metadata: map[string]interface{}{},
 		Example:  "something went wrong",
