@@ -5,11 +5,11 @@ info:
   description: "Provides programatic access to your Oto services."
 servers:
  - url: https://somewhere.com/api/v1/
-   description: API server
+   description: "API server"
 paths:<%= for (service) in def.Services { %><%= for (method) in service.Methods { %>
   "/<%= service.Name %>.<%= method.Name %>":
     post:
-      summary: "<%= method.Comment %>"
+      summary: <%= json_inline(method.Comment) %>
       requestBody:
         required: true
         content: 
@@ -18,13 +18,13 @@ paths:<%= for (service) in def.Services { %><%= for (method) in service.Methods 
               $ref: "#/components/schemas/<%= method.InputObject.CleanObjectName %>"
       responses:
         '200':
-          description: A 200, successful response.
+          description: "A 200, successful response."
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/<%= method.OutputObject.CleanObjectName %>"
         '500':
-          description: A non-200 response means something went wrong.
+          description: "A non-200 response means something went wrong."
           content:
             application/json:
               schema:
@@ -34,11 +34,11 @@ components:
   schemas:
     ErrorResponse:
       type: object
-      description: If a request fails, the an ErrorResponse is returned, which contains an Error string explaining what happened.
+      description: "If a request fails, the an ErrorResponse is returned, which contains an Error string explaining what happened."
       properties:
         error:
           type: string
-          description: A human readable description of what went wrong.
+          description: "A human readable description of what went wrong."
   <%= for (object) in def.Objects { %>
     <%= object.Name %>:
       type: object
