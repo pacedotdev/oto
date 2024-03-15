@@ -485,8 +485,12 @@ func (p *Parser) parseFieldType(pkg *packages.Package, obj types.Object) (FieldT
 			ftype.TSType = "boolean"
 			ftype.DartType = "bool"
 		case "int", "int16", "int32", "int64",
-			"uint", "uint16", "uint32", "uint64",
-			"float32", "float64":
+			"uint", "uint16", "uint32", "uint64":
+			ftype.JSType = "number"
+			ftype.TSType = "number"
+			ftype.SwiftType = "Int"
+			ftype.DartType = "int"
+		case "float32", "float64":
 			ftype.JSType = "number"
 			ftype.SwiftType = "Double"
 			ftype.TSType = "number"
