@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -34,12 +33,13 @@ flags:`)
 		flags.PrintDefaults()
 	}
 	var (
-		template   = flags.String("template", "", "plush template to render")
-		outfile    = flags.String("out", "", "output file (default: stdout)")
-		pkg        = flags.String("pkg", "", "explicit package name (default: inferred)")
-		v          = flags.Bool("v", false, "verbose output")
-		paramsStr  = flags.String("params", "", "list of parameters in the format: \"key:value,key:value\"")
-		ignoreList = flags.String("ignore", "", "comma separated list of interfaces to ignore")
+		template           = flags.String("template", "", "plush template to render")
+		outfile            = flags.String("out", "", "output file (default: stdout)")
+		pkg                = flags.String("pkg", "", "explicit package name (default: inferred)")
+		v                  = flags.Bool("v", false, "verbose output")
+		paramsStr          = flags.String("params", "", "list of parameters in the format: \"key:value,key:value\"")
+		ignoreList         = flags.String("ignore", "", "comma separated list of interfaces to ignore")
+		suppressErrorField = flags.Bool("suppressErrorField", false, "suppress error field in response")
 	)
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
@@ -54,6 +54,7 @@ flags:`)
 		return errors.Wrap(err, "params")
 	}
 	p := parser.New(flags.Args()...)
+	p.SuppressErrorField = *suppressErrorField
 	ignoreItems := strings.Split(*ignoreList, ",")
 	if ignoreItems[0] != "" {
 		p.ExcludeInterfaces = ignoreItems
@@ -72,7 +73,7 @@ flags:`)
 	if *pkg != "" {
 		def.PackageName = *pkg
 	}
-	b, err := ioutil.ReadFile(*template)
+	b, err := os.ReadFile(*template)
 	if err != nil {
 		return err
 	}
