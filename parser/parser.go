@@ -177,6 +177,9 @@ type Parser struct {
 	// objects marks object names.
 	objects map[string]struct{}
 
+	// SuppressErrorField suppresses the Error field in output objects.
+	SuppressErrorField bool
+
 	// docs are the docs for extracting comments.
 	docs *doc.Package
 }
@@ -255,8 +258,10 @@ func (p *Parser) Parse() (Definition, error) {
 	sort.Slice(p.def.Objects, func(i, j int) bool {
 		return p.def.Objects[i].Name < p.def.Objects[j].Name
 	})
-	if err := p.addOutputFields(); err != nil {
-		return p.def, err
+	if !p.SuppressErrorField {
+		if err := p.addOutputFields(); err != nil {
+			return p.def, err
+		}
 	}
 	return p.def, nil
 }
