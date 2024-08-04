@@ -10,5 +10,5 @@ require (
 	github.com/gobuffalo/tags v2.1.7+incompatible // indirect
 	github.com/matryer/is v1.4.0
 	github.com/pkg/errors v0.9.1
-	golang.org/x/tools v0.1.5
+	golang.org/x/tools v0.23.0
 )
