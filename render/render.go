@@ -36,8 +36,11 @@ func Render(template string, def parser.Definition, params map[string]interface{
 	return s, nil
 }
 
-func toJSONHelper(v interface{}) (template.HTML, error) {
-	b, err := json.MarshalIndent(v, "", "\t")
+func toJSONHelper(v interface{}, prefix, indent string) (template.HTML, error) {
+	if indent == "" {
+		indent = "\t"
+	}
+	b, err := json.MarshalIndent(v, prefix, indent)
 	if err != nil {
 		return "", err
 	}
