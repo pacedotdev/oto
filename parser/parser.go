@@ -86,6 +86,18 @@ type Service struct {
 	Metadata map[string]interface{} `json:"metadata"`
 }
 
+func (s Service) MethodsByMetadata(field string) map[string][]Method {
+	m := make(map[string][]Method)
+	for _, method := range s.Methods {
+		if val, ok := method.Metadata[field]; ok {
+			if valStr, ok := val.(string); ok {
+				m[valStr] = append(m[valStr], method)
+			}
+		}
+	}
+	return m
+}
+
 // Method describes a method that a Service can perform.
 type Method struct {
 	Name           string    `json:"name"`
