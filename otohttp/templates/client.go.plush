@@ -96,7 +96,7 @@ func New<%= service.Name %>(client *Client) *<%= service.Name %> {
 		defer decodedBody.Close()
 		bodyReader = decodedBody
 	}
-	respBodyBytes, err := ioutil.ReadAll(bodyReader)
+	respBodyBytes, err := io.ReadAll(bodyReader)
 	if err != nil {
 		return nil, errors.Wrap(err, "<%= service.Name %>.<%= method.Name %>: read response body")
 	}
